@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minitel X Terminal</title>
+    <style>
+        /* Design rétro-futuriste vert Minitel/Matrix */
+        body {
+            background-color: #0a0e14;
+            color: #00ff66;
+            font-family: 'Courier New', Courier, monospace;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .terminal {
+            background-color: #11161f;
+            border: 2px solid #00ff66;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 0 30px rgba(0, 255, 102, 0.2);
+            width: 90%;
+            max-width: 500px;
+            box-sizing: border-box;
+        }
+        h1 {
+            font-size: 22pt;
+            text-align: center;
+            margin: 0 0 5px 0;
+            text-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
+        }
+        .status {
+            text-align: center;
+            font-size: 10pt;
+            color: #888;
+            margin-bottom: 25px;
+        }
+        textarea {
+            width: 100%;
+            height: 120px;
+            background-color: #05070a;
+            color: #00ff66;
+            border: 1px solid #00ff66;
+            border-radius: 5px;
+            padding: 12px;
+            font-family: monospace;
+            font-size: 12pt;
+            resize: none;
+            box-sizing: border-box;
+        }
+        textarea:focus {
+            outline: none;
+            box-shadow: 0 0 10px rgba(0, 255, 102, 0.5);
+        }
+        button {
+            width: 100%;
+            margin-top: 15px;
+            background-color: #00ff66;
+            color: #0a0e14;
+            border: none;
+            padding: 14px;
+            font-size: 12pt;
+            font-weight: bold;
+            font-family: monospace;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: all 0.2s;
+        }
+        button:hover {
+            background-color: #00cc52;
+            box-shadow: 0 0 15px rgba(0, 255, 102, 0.4);
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <h1>[ MINITEL X SYSTEM ]</h1>
+        <div class="status">Statut : En ligne | Prêt pour ESP32</div>
+        <form action="/envoyer" method="GET">
+            <textarea name="msg" placeholder="Entrez le message à transmettre..."></textarea>
+            <button type="submit">TRANSMETTRE LE MESSAGE</button>
+        </form>
+    </div>
+</body>
+</html>
