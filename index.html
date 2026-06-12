@@ -3,13 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minitel X Terminal</title>
+    <title>Minitel 9 - Live Control</title>
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
-
+        /* Style général rétro Minitel / Terminal */
         body {
-            background-color: #040608;
-            color: #00ff33;
+            background-color: #0d0d0d;
+            color: #33ff33;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             justify-content: center;
@@ -17,385 +16,251 @@
             height: 100vh;
             margin: 0;
             overflow: hidden;
+        }
+
+        /* Effet de balayage CRT à l'écran */
+        .crt-screen {
+            width: 100%;
+            height: 100%;
+            max-width: 600px;
+            max-height: 500px;
+            border: 4px solid #33ff33;
+            background-color: #1a1a1a;
+            padding: 20px;
+            box-shadow: 0 0 20px rgba(51, 255, 51, 0.5);
             position: relative;
+            box-sizing: border-box;
         }
 
-        /* --- FILTRE CRT RETRO INTENSE --- */
-        body::before {
-            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
-            background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%), 
-                        linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
-            z-index: 99998; background-size: 100% 3px, 5px 100%; pointer-events: none;
+        /* En-tête avec les infos de compte */
+        .header-info {
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-weight: bold;
+            font-size: 1.1rem;
         }
 
-        /* --- GLITCH DE GRÉSILLEMENT --- */
-        .glitch-overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(0deg, rgba(0, 255, 51, 0.15), rgba(0, 255, 51, 0.15) 2px, transparent 2px, transparent 4px);
-            pointer-events: none; z-index: 99999; display: none; opacity: 0.8;
+        /* Zone centrale d'envoi de message */
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+            margin-top: 20px;
         }
 
-        /* --- FOND MATRICIEL : PLUIE DE CODE AGGRANDIE --- */
-        .code-rain-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            z-index: 0; opacity: 0.09; pointer-events: none; overflow: hidden;
-            display: flex; justify-content: space-between; font-size: 13pt; font-weight: bold; line-height: 1.2;
-        }
-        .code-column {
-            display: flex; flex-direction: column; white-space: nowrap;
-            animation: fall linear infinite;
-        }
-        @keyframes fall {
-            0% { transform: translateY(-100%); }
-            100% { transform: translateY(100%); }
+        h1 {
+            font-size: 1.5rem;
+            text-align: center;
+            margin-bottom: 20px;
+            text-transform: uppercase;
         }
 
-        /* --- ICÔNES RETRO FLOTTANTES --- */
-        .floating-bg-icon {
-            position: absolute; fill: none; stroke: #00ff33; stroke-width: 1.5;
-            stroke-linecap: square; stroke-linejoin: miter; opacity: 0.18;
-            filter: drop-shadow(0 0 4px rgba(0, 255, 51, 0.4));
-            animation: float-around 14s infinite ease-in-out; z-index: 1;
-        }
-        #bg-icon-ps { width: 75px; height: 50px; top: 8%; left: 6%; animation-delay: 0s; }
-        #bg-icon-ps1 { width: 65px; height: 65px; top: 22%; right: 10%; animation-delay: 3.5s; }
-        #bg-icon-mini { width: 65px; height: 65px; bottom: 30%; left: 5%; animation-delay: 7s; }
-        #bg-icon-phone { width: 65px; height: 65px; bottom: 12%; left: 45%; animation-delay: 10.5s; }
-        #bg-icon-pc { width: 65px; height: 65px; bottom: 15%; right: 8%; animation-delay: 5s; }
-
-        @keyframes float-around {
-            0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
-            50% { transform: translateY(-15px) translateX(8px) rotate(4deg); }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            width: 80%;
+            gap: 10px;
         }
 
-        /* --- POP-UP DES RÈGLES --- */
+        input[type="text"] {
+            background-color: #000;
+            border: 2px solid #33ff33;
+            color: #33ff33;
+            padding: 10px;
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        button {
+            background-color: #33ff33;
+            color: #000;
+            border: none;
+            padding: 12px;
+            font-family: 'Courier New', Courier, monospace;
+            font-weight: bold;
+            font-size: 1rem;
+            cursor: pointer;
+            text-transform: uppercase;
+        }
+
+        button:disabled {
+            background-color: #114411;
+            color: #555;
+            cursor: not-allowed;
+        }
+
+        /* --- STYLE DE LA POP-UP RÉTRO --- */
         .modal-overlay {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(4, 6, 8, 0.96); z-index: 10000;
-            display: none; justify-content: center; align-items: center;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
         }
+
         .modal-box {
-            background-color: #0c111a; border: 2px solid #00ff33; border-radius: 8px;
-            width: 85%; max-width: 400px; padding: 20px; box-shadow: 0 0 30px rgba(0, 255, 51, 0.3);
-            position: relative;
+            background-color: #000;
+            border: 3px double #33ff33;
+            padding: 25px;
+            width: 80%;
+            max-width: 350px;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(51, 255, 51, 0.3);
         }
-        .modal-title { font-size: 13pt; font-weight: bold; text-align: center; margin-top: 0; border-bottom: 1px dashed #00ff33; padding-bottom: 10px; }
-        .modal-text { font-size: 10pt; line-height: 1.5; text-align: justify; margin: 15px 0; color: #e6edf3; }
-        .channel-highlight { color: #ff3333; font-weight: bold; background: rgba(255, 51, 51, 0.1); padding: 2px 4px; }
-        .modal-checkbox-zone { display: flex; align-items: center; gap: 10px; font-size: 9pt; margin-top: 20px; }
-        .modal-checkbox-zone input { accent-color: #00ff33; width: 16px; height: 16px; }
-        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 16pt; cursor: pointer; color: #333; pointer-events: none; }
-        .close-btn.active { color: #00ff33; pointer-events: auto; }
-        .modal-action-btn { width: 100%; margin-top: 15px; background-color: #151d2a; color: #444; border: 1px solid #222; padding: 12px; font-family: monospace; font-weight: bold; border-radius: 5px; pointer-events: none; }
-        .modal-action-btn.active { background-color: #00ff33; color: #040608; border: none; cursor: pointer; pointer-events: auto; box-shadow: 0 0 15px rgba(0, 255, 51, 0.4); }
 
-        /* --- INTERFACE DU TERMINAL ACCUEIL --- */
-        .terminal-container { z-index: 10; width: 90%; max-width: 400px; display: none; }
-        .terminal { background-color: rgba(12, 17, 26, 0.91); border: 2px solid #00ff33; border-radius: 10px; padding: 20px; box-shadow: 0 0 25px rgba(0, 255, 51, 0.25); }
-        h1 { font-size: 16pt; text-align: center; margin: 0 0 5px 0; text-shadow: 0 0 8px #00ff33; }
-        .status { text-align: center; font-size: 9pt; color: #00aa22; margin-bottom: 20px; }
-        textarea { width: 100%; height: 110px; background-color: #040608; color: #00ff33; border: 1px solid #00ff33; border-radius: 5px; padding: 10px; font-family: monospace; font-size: 11pt; resize: none; }
-        textarea:focus { outline: none; box-shadow: 0 0 10px rgba(0, 255, 51, 0.5); }
-        #submitBtn { width: 100%; margin-top: 15px; background-color: #00ff33; color: #040608; border: none; padding: 12px; font-size: 11pt; font-weight: bold; font-family: monospace; cursor: pointer; border-radius: 5px; }
-        #submitBtn:disabled { background-color: #142218 !important; color: #005511 !important; border: 1px solid #003300; cursor: not-allowed; }
-
-        /* --- ÉCRAN 1 : BOOT INITIAL LONG (60 SECONDES) --- */
-        #boot-screen {
-            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #040608; z-index: 10005;
-            display: flex; flex-direction: column; justify-content: center; align-items: center;
+        .modal-box h2 {
+            font-size: 1.2rem;
+            margin-top: 0;
+            margin-bottom: 15px;
+            text-transform: uppercase;
         }
-        .boot-scene { position: relative; width: 380px; height: 140px; display: flex; justify-content: space-between; align-items: center; padding: 0 5px; }
-        .boot-line { position: absolute; top: 50%; left: 45px; width: 290px; height: 2px; border-top: 2px dashed rgba(0, 255, 51, 0.4); z-index: 1; transform: translateY(-50%); }
-        
-        .boot-folder {
-            position: absolute; width: 22px; height: 22px; fill: #00ff33; top: 50%; left: 35px;
-            transform: translateY(-50%);
-            animation: boot-flow 3s infinite linear; z-index: 2; filter: drop-shadow(0 0 6px #00ff33);
+
+        .modal-box input {
+            width: 90%;
+            margin-bottom: 15px;
+            text-align: center;
         }
-        @keyframes boot-flow { 0% { left: 35px; } 100% { left: 320px; } }
 
-        /* MODULE ESP32 ULTRA DÉTAILLÉ */
-        .esp32-detailed {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 55px; height: 75px; background: #121820; border: 2px solid #00ff33;
-            border-radius: 4px; z-index: 3; box-shadow: 0 0 15px rgba(0, 255, 51, 0.4);
+        .error-msg {
+            color: #ff3333;
+            font-size: 0.85rem;
+            margin-bottom: 10px;
+            min-height: 18px;
         }
-        .esp32-antenna { position: absolute; top: 2px; left: 5px; width: 41px; height: 12px; border: 2px solid #00ff33; border-bottom: none; background: repeating-linear-gradient(90deg, #00ff33, #00ff33 2px, transparent 2px, transparent 6px); opacity: 0.8; }
-        .esp32-chip { position: absolute; top: 22px; left: 10px; width: 31px; height: 28px; border: 1px solid #00ff33; background: #040608; font-size: 5pt; display: flex; justify-content: center; align-items: center; font-weight: bold; text-align: center; color: #00ff33; }
-        .esp32-detailed::before { content: ""; position: absolute; top: 15px; left: -4px; height: 50px; width: 2px; background: repeating-linear-gradient(0deg, #00ff33, #00ff33 3px, transparent 3px, transparent 6px); }
-        .esp32-detailed::after { content: ""; position: absolute; top: 15px; right: -4px; height: 50px; width: 2px; background: repeating-linear-gradient(0deg, #00ff33, #00ff33 3px, transparent 3px, transparent 6px); }
-
-        /* CONTENEURS DE JAUGE */
-        .boot-progress-container { width: 280px; height: 12px; border: 1px solid #00ff33; margin-top: 25px; padding: 2px; border-radius: 3px; background: #040608; }
-        .boot-progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load-sixty 60s linear forwards; box-shadow: 0 0 8px #00ff33; }
-        
-        @keyframes load-sixty { to { width: 100%; } }
-        
-        .boot-progress-container.unstable { border-color: #ff3333 !important; }
-        .boot-progress-bar.unstable { background-color: #ff3333 !important; box-shadow: 0 0 10px #ff3333 !important; }
-        .loading-text { margin-top: 15px; font-size: 10pt; width: 300px; text-align: center; letter-spacing: 1px; z-index: 5; line-height: 1.4; }
-        .loading-text.unstable-text { color: #ff3333 !important; animation: blink-alert 0.4s infinite alternate; }
-        
-        @keyframes blink-alert { from { opacity: 1; } to { opacity: 0.3; } }
-
-        /* --- ÉCRAN 2 : ENVOI MESSAGE (PORTÉ À 30 SECONDES) --- */
-        #animation-screen {
-            display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: #040608; z-index: 9999;
-            flex-direction: column; justify-content: center; align-items: center;
-        }
-        .scene { position: relative; width: 320px; height: 200px; }
-        .road-arc { position: absolute; top: 50px; left: 35px; width: 250px; height: 250px; border: 3px dashed #00ff33; border-radius: 50%; clip-path: inset(0 0 50% 0); filter: drop-shadow(0 0 4px #00ff33); }
-        .moving-folder { position: absolute; width: 28px; height: 28px; fill: #00ff33; offset-path: path('M 35 175 A 125 125 0 0 1 285 175'); animation: electric-travel 3s infinite linear; filter: drop-shadow(0 0 8px #00ff33); }
-        
-        @keyframes electric-travel {
-            0% { offset-distance: 0%; } 12% { offset-distance: 25%; } 15% { offset-distance: 20%; } 25% { offset-distance: 20%; }
-            38% { offset-distance: 55%; } 42% { offset-distance: 50%; } 55% { offset-distance: 50%; } 70% { offset-distance: 85%; }
-            75% { offset-distance: 80%; } 88% { offset-distance: 80%; } 100% { offset-distance: 100%; }
-        }
-        
-        .hardware-icon { position: absolute; bottom: 5px; fill: none; stroke: #00ff33; stroke-width: 1.5; filter: drop-shadow(0 0 6px #00ff33); z-index: 4; }
-        .icon-left { left: 5px; } .icon-right { right: 5px; }
-
-        .minitel-screen-lines { position: absolute; top: 10px; left: 9px; width: 24px; height: 16px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-        .line-white { width: 0%; height: 2px; background-color: #ffffff; box-shadow: 0 0 2px #ffffff; animation: write-line-thirty 30s linear forwards; }
-        .line-white:nth-child(2) { animation-delay: 6s; } .line-white:nth-child(3) { animation-delay: 13s; } .line-white:nth-child(4) { animation-delay: 21s; }
-        @keyframes write-line-thirty { to { width: 100%; } }
-
-        .progress-container { width: 260px; height: 10px; border: 1px solid #00ff33; margin-top: 30px; padding: 2px; border-radius: 3px; z-index: 5; }
-        .progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load-thirty 30s linear forwards; box-shadow: 0 0 8px #00ff33; }
-        
-        @keyframes load-thirty { to { width: 100%; } }
     </style>
 </head>
 <body>
 
-    <div class="code-rain-bg" id="codeRain"></div>
+    <div class="crt-screen">
+        <!-- Affichage en haut à gauche -->
+        <div class="header-info">Compte : <span id="affichage-pseudo">---</span></div>
 
-    <div class="glitch-overlay" id="glitchBlock"></div>
-
-    <div id="boot-screen">
-        <div class="boot-scene">
-            <div class="boot-line"></div>
-            <svg class="boot-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            
-            <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
-            
-            <div class="esp32-detailed">
-                <div class="esp32-antenna"></div>
-                <div class="esp32-chip">ESP32<br>WROOM</div>
-            </div>
-            
-            <div style="position: relative; width: 45px; height: 45px;">
-                <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/></svg>
+        <!-- Contenu Principal -->
+        <div class="main-content">
+            <h1>Envoi de Message au Minitel</h1>
+            <div class="input-group">
+                <input type="text" id="message-input" placeholder="Tape ton message ici..." maxlength="40">
+                <button id="btn-envoyer">Envoyer au chat</button>
             </div>
         </div>
-        
-        <div class="boot-progress-container" id="bootProgressCont"><div class="boot-progress-bar" id="bootProgressBar"></div></div>
-        <div class="loading-text" id="bootStatusText">INITIALISATION SYSTEME...<br>RECHERCHE MODULE ESP32</div>
-    </div>
 
-    <div class="modal-overlay" id="rulesModal">
-        <div class="modal-box">
-            <div class="close-btn" id="modalCloseX" onclick="closeModal()">×</div>
-            <div class="modal-title">[ PROTOCOLE SÉCURITÉ ]</div>
-            <div class="modal-text">
-                Ce site est conçu pour envoyer des messages modernes depuis un minitel vieux.<br><br>
-                Veuillez ne pas spammer et respecter le minitel. Pas d'insulte.<br><br>
-                Le minitel est ouvert seulement en live sur cette chaîne YOUTUBE <span class="channel-highlight">team-banane_9ytb</span> en live à peu près tous les jours.
-            </div>
-            <div class="modal-checkbox-zone">
-                <input type="checkbox" id="acceptCheck" onclick="toggleModalButtons()">
-                <label for="acceptCheck">J'ai lu et j'accepte les règles du système.</label>
-            </div>
-            <button class="modal-action-btn" id="modalActionBtn" onclick="closeModal()">ACCEPTER ET VALIDER</button>
-        </div>
-    </div>
-
-    <svg class="floating-bg-icon" id="bg-icon-ps" viewBox="0 0 40 26">
-        <path d="M 6,2 H 34 A 4,4 0 0 1 38,6 V 16 A 6,6 0 0 1 32,22 L 28,18 H 12 L 8,22 A 6,6 0 0 1 2,16 V 6 A 4,4 0 0 1 6,2 Z"/>
-        <path d="M 7,11 H 11 V 7 H 13 V 11 H 17 V 13 H 13 V 17 H 11 V 13 H 7 Z" fill="#00ff33"/>
-        <rect x="29" y="8" width="3" height="3" fill="#00ff33"/><rect x="25" y="12" width="3" height="3" fill="#00ff33"/>
-        <rect x="33" y="12" width="3" height="3" fill="#00ff33"/><rect x="29" y="16" width="3" height="3" fill="#00ff33"/>
-        <path d="M 20,2 V 0 H 16 V -4 H 24"/>
-    </svg>
-    <svg class="floating-bg-icon" id="bg-icon-ps1" viewBox="0 0 40 40">
-        <path d="M4,8 H36 V32 H4 Z M4,8 L6,6 H34 L36,8 M4,32 L6,34 H34 L36,32"/>
-        <path d="M12,20 A 8,8 0 1,0 28,20 A 8,8 0 1,0 12,20 Z"/>
-        <text x="15" y="23" font-family="monospace" font-size="6px" font-weight="bold" fill="none" stroke="#00ff33" stroke-width="0.7">PS1</text>
-        <rect x="7" y="10" width="4" height="4"/><rect x="7" y="26" width="4" height="4"/>
-    </svg>
-    <svg class="floating-bg-icon" id="bg-icon-mini" viewBox="0 0 45 45">
-        <path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z"/>
-    </svg>
-    <svg class="floating-bg-icon" id="bg-icon-phone" viewBox="0 0 40 40">
-        <path d="M10,20 H30 L34,34 H6 Z M16,16 H24 V20 H16 Z M15,27 A 4,4 0 1,0 25,27 A 4,4 0 1,0 15,27 Z"/>
-        <path d="M8,10 H32 V13 H8 Z M6,7 H10 V11 H6 Z M30,7 H34 V11 Z"/>
-    </svg>
-    <svg class="floating-bg-icon" id="bg-icon-pc" viewBox="0 0 32 32"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M2,26 H30 V28 H2 Z"/></svg>
-
-    <div class="terminal-container" id="main-interface">
-        <div class="terminal">
-            <h1>[ MINITEL X SYSTEM ]</h1>
-            <div class="status">Statut : En ligne | Prêt pour ESP32</div>
-            
-            <form id="msgForm" action="/envoyer" method="GET">
-                <textarea name="msg" id="msgTextarea" placeholder="Entrez le message à transmettre..." required></textarea>
-                <button type="submit" id="submitBtn">TRANSMETTRE LE MESSAGE</button>
-            </form>
-        </div>
-    </div>
-
-    <div id="animation-screen">
-        <div class="scene">
-            <div class="road-arc"></div>
-            <svg class="moving-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            <svg class="hardware-icon icon-left" width="45" height="45" viewBox="0 0 32 32"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
-
-            <div class="hardware-icon icon-right" style="position: absolute; right: 5px; width: 45px; height: 45px;">
-                <svg width="45" height="45" viewBox="0 0 45 45" fill="none" stroke="#00ff33" stroke-width="1.5">
-                    <path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/>
-                </svg>
-                <div class="minitel-screen-lines">
-                    <div class="line-white"></div><div class="line-white"></div><div class="line-white"></div><div class="line-white"></div>
-                </div>
+        <!-- Pop-up d'inscription du Pseudo -->
+        <div class="modal-overlay" id="pseudo-modal">
+            <div class="modal-box">
+                <h2>Choix du Pseudo</h2>
+                <input type="text" id="pseudo-input" placeholder="Pseudo (3 à 10 car.)" maxlength="10">
+                <div class="error-msg" id="modal-error"></div>
+                <button id="btn-accepter" disabled>Accepter</button>
             </div>
         </div>
-        <div class="progress-container"><div class="progress-bar"></div></div>
-        <div class="loading-text" id="sendProgressText">CONNEXION INITIALE...</div>
     </div>
 
     <script>
-        // --- GÉNÉRATEUR DE PLUIE DE CODE VERT ---
-        const bgContainer = document.getElementById('codeRain');
-        const columnsCount = Math.floor(window.innerWidth / 40);
-        const codePhrases = ["ESP32_BOOT", "BAUD_4800", "CONNECT_FAIL", "SYS_RETRY", "DIN_5_PIN", "NET_BUSY", "DATA_STREAM", "M_ZNF330", "STATUS_200", "0110"];
-        
-        for (let i = 0; i < columnsCount; i++) {
-            let col = document.createElement('div');
-            col.className = "code-column";
-            col.style.animationDuration = `${Math.random() * 6 + 5}s`;
-            col.style.animationDelay = `${Math.random() * 4}s`;
-            let textBlock = "";
-            for (let j = 0; j < 12; j++) {
-                textBlock += codePhrases[Math.floor(Math.random() * codePhrases.length)] + "<br>";
-            }
-            col.innerHTML = textBlock;
-            bgContainer.appendChild(col);
+        // Ta liste de sécurité pour bloquer les bêtises
+        const blacklist = [
+            "merde", "connard", "connarde", "conard", "con", "conne", "salaud", "salope", "enfoire", "enfoiree",
+            "batard", "batarde", "crevard", "crevarde", "pouffiasse", "poufiasse", "chieur", "chieuse",
+            "filsdepute", "filsdeup", "fdp", "putain", "pute", "petasse", "biatch", "bordel", "garce",
+            "couille", "couilles", "bite", "bites", "chatte", "chattes", "cul", "trousduc", "trouducul",
+            "zeub", "zoub", "teub", "teube", "chneck", "beauf",
+            "branleur", "branleuse", "branlette", "fouteur", "encule", "enculee", "nique", "niquer", 
+            "niquemouk", "baise", "baiser", "suceur", "suceuse", "tocard", "tocarde", "fouillemerde",
+            "tg", "ntm", "pd"
+        ];
+
+        // Éléments HTML
+        const modalOverlay = document.getElementById('pseudo-modal');
+        const pseudoInput = document.getElementById('pseudo-input');
+        const btnAccepter = document.getElementById('btn-accepter');
+        const modalError = document.getElementById('modal-error');
+        const affichagePseudo = document.getElementById('affichage-pseudo');
+        const messageInput = document.getElementById('message-input');
+        const btnEnvoyer = document.getElementById('btn-envoyer');
+
+        // Fonction pour vérifier si un texte contient un gros mot
+        function contientMotInterdit(texte) {
+            const texteMinuscule = texte.toLowerCase();
+            return blacklist.some(mot => texteMinuscule.includes(mot));
         }
 
-        // --- CYCLE DE BOOT DE 1 MINUTE ---
-        const pCont = document.getElementById('bootProgressCont');
-        const pBar = document.getElementById('bootProgressBar');
-        const statusText = document.getElementById('bootStatusText');
-
-        setTimeout(() => {
-            pCont.classList.add('unstable');
-            pBar.classList.add('unstable');
-            statusText.classList.add('unstable-text');
-            statusText.innerHTML = "[ALERTE: CONNEXION INSTABLE...]<br>TENTATIVE DE RECONNEXION AU CANAL";
-        }, 40000);
-
-        setTimeout(() => {
-            pCont.classList.remove('unstable');
-            pBar.classList.remove('unstable');
-            statusText.classList.remove('unstable-text');
-            statusText.innerHTML = "SIGNAL RETRO STABILISÉ...<br>FINALISATION DU BOOT DE L'ESP32";
-        }, 48000);
-
-        setTimeout(() => {
-            document.getElementById('boot-screen').style.display = 'none';
-            document.getElementById('rulesModal').style.display = 'flex';
-        }, 60000);
-
-        // --- GLITCH ÉCRAN CATHODIQUE ---
-        function triggerGlitch() {
-            const glitch = document.getElementById('glitchBlock');
-            glitch.style.display = 'block';
-            glitch.style.height = `${Math.random() * 25 + 10}%`;
-            glitch.style.top = `${Math.random() * 75}%`;
-            setTimeout(() => {
-                glitch.style.display = 'none';
-                setTimeout(triggerGlitch, Math.random() * 4000 + 3000);
-            }, Math.random() * 200 + 100);
-        }
-        triggerGlitch();
-
-        // --- POP-UP DES RÈGLES ---
-        function toggleModalButtons() {
-            const isChecked = document.getElementById('acceptCheck').checked;
-            const closeX = document.getElementById('modalCloseX');
-            const actionBtn = document.getElementById('modalActionBtn');
-            if (isChecked) {
-                closeX.classList.add('active'); actionBtn.classList.add('active');
+        // Étape 1 : Vérification au chargement de la page
+        window.addEventListener('DOMContentLoaded', () => {
+            const pseudoSauvegarde = localStorage.getItem('minitel_pseudo');
+            
+            if (pseudoSauvegarde) {
+                // Si le pseudo existe déjà en mémoire, on masque la pop-up et on l'affiche en haut
+                modalOverlay.style.display = 'none';
+                affichagePseudo.textContent = pseudoSauvegarde;
             } else {
-                closeX.classList.remove('active'); actionBtn.classList.remove('active');
+                // Sinon, on force l'affichage de la pop-up
+                modalOverlay.style.display = 'flex';
             }
-        }
+        });
 
-        function closeModal() {
-            if (document.getElementById('acceptCheck').checked) {
-                document.getElementById('rulesModal').style.display = 'none';
-                document.getElementById('main-interface').style.display = 'block';
+        // Étape 2 : Gestion de la saisie dans la pop-up (Bouton actif/désactivé)
+        pseudoInput.addEventListener('input', () => {
+            const valeur = pseudoInput.value.trim();
+            
+            // On active le bouton uniquement si la taille est entre 3 et 10 caractères
+            if (valeur.length >= 3 && valeur.length <= 10) {
+                btnAccepter.disabled = false;
+                modalError.textContent = ""; // Efface les erreurs pendant la frappe
+            } else {
+                btnAccepter.disabled = true;
             }
-        }
+        });
 
-        // --- TIMER ANTI-SPAM ---
-        const cooldownTime = 120;
-        const submitBtn = document.getElementById('submitBtn');
-        const textarea = document.getElementById('msgTextarea');
+        // Étape 3 : Validation du pseudo au clic sur "Accepter"
+        btnAccepter.addEventListener('click', () => {
+            const pseudoChoisi = pseudoInput.value.trim();
 
-        function updateTimer() {
-            const lastSubmit = localStorage.getItem('minitel_last_submit');
-            if (lastSubmit) {
-                const now = Math.floor(Date.now() / 1000);
-                const elapsed = now - parseInt(lastSubmit);
-                const remaining = cooldownTime - elapsed;
-
-                if (remaining > 0) {
-                    submitBtn.disabled = true; textarea.disabled = true;
-                    submitBtn.innerText = `SPAM BLOCK : ${remaining}s`;
-                    setTimeout(updateTimer, 1000);
-                } else {
-                    submitBtn.disabled = false; textarea.disabled = false;
-                    submitBtn.innerText = "TRANSMETTRE LE MESSAGE";
-                    localStorage.removeItem('minitel_last_submit');
-                }
+            // Vérification de la blacklist
+            if (contientMotInterdit(pseudoChoisi)) {
+                modalError.textContent = "Pseudo interdit ! 🛑";
+                return;
             }
-        }
-        window.onload = function() { updateTimer(); };
 
-        // --- GESTION DU TEXTE EVOLUTIF DE L'ENVOI (30 SECONDES DÉCOMPTE) ---
-        function startSendingTextAnimation() {
-            const txt = document.getElementById('sendProgressText');
+            // Si tout est valide, on enregistre définitivement dans la mémoire
+            localStorage.setItem('minitel_pseudo', pseudoChoisi);
             
-            // Étape 1 : 0s à 4s
-            setTimeout(() => { txt.innerHTML = "OUVERTURE DU CANAL DIN..."; }, 4000);
-            // Étape 2 : 4s à 8s
-            setTimeout(() => { txt.innerHTML = "CHARGEMENT DU MESSAGE CONTENU..."; }, 8000);
-            // Étape 3 : 8s à 13s
-            setTimeout(() => { txt.innerHTML = "CONVERSION BINAIRE EN 7 BITS..."; }, 13000);
-            // Étape 4 : 13s à 18s
-            setTimeout(() => { txt.innerHTML = "TRANSFERT DES FICHIERS VERS L'ESP32..."; }, 18000);
-            // Étape 5 : 18s à 24s
-            setTimeout(() => { txt.innerHTML = "PROCESSING LOGICIEL ET TRAITEMENT..."; }, 24000);
-            // Étape 6 : 24s à 30s
-            setTimeout(() => { txt.innerHTML = "INSTALLATION REUSSIE ! ENVOI AU MINITEL..."; }, 27000);
-        }
+            // On met à jour l'affichage en haut à gauche
+            affichagePseudo.textContent = pseudoChoisi;
+            
+            // On ferme la pop-up
+            modalOverlay.style.display = 'none';
+        });
 
-        // --- FORMULAIRE ENVOI ---
-        document.getElementById('msgForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            localStorage.setItem('minitel_last_submit', Math.floor(Date.now() / 1000));
-            document.getElementById('main-interface').style.display = 'none';
-            document.getElementById('animation-screen').style.display = 'flex';
+        // Étape 4 : Envoi du message final combiné (Pseudo: Message)
+        btnEnvoyer.addEventListener('click', () => {
+            const message = messageInput.value.trim();
+            const pseudo = localStorage.getItem('minitel_pseudo') || "Anonyme";
+
+            if (message.length === 0) return;
+
+            if (contientMotInterdit(message)) {
+                alert("Pas de gros mots dans les messages ! 🛑");
+                messageInput.value = "";
+                return;
+            }
+
+            // C'est cette variable textFinal qui partira vers ton ESP32 !
+            const textFinal = `${pseudo}: ${message}`;
             
-            // Lance la boucle des mots qui changent
-            startSendingTextAnimation();
+            console.log("Envoi au Minitel :", textFinal);
             
-            // Soumission réelle de l'action après 30 secondes (30000ms)
-            setTimeout(() => { this.submit(); }, 30000);
+            // TODO: Ajouter ici ta fonction fetch() ou WebSocket pour envoyer textFinal à l'ESP32
+
+            // On vide la case message après envoi
+            messageInput.value = "";
         });
     </script>
 </body>
