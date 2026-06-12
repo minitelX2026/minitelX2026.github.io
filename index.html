@@ -5,9 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Minitel X Terminal</title>
     <style>
+        *, *::before, *::after { box-sizing: border-box; }
+
         body {
             background-color: #040608;
-            color: #00ff33; /* Même vert flashy partout */
+            color: #00ff33;
             font-family: 'Courier New', Courier, monospace;
             display: flex;
             justify-content: center;
@@ -18,69 +20,44 @@
             position: relative;
         }
 
-        /* --- FILTRE ÉCRAN CATHODIQUE RETRO INTENSE (CRT & SCANLINES) --- */
+        /* --- FILTRE CRT RETRO INTENSE --- */
         body::before {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
+            content: " "; display: block; position: fixed; top: 0; left: 0; bottom: 0; right: 0;
             background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.45) 50%), 
                         linear-gradient(90deg, rgba(255, 0, 0, 0.04), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.04));
-            z-index: 99998;
-            background-size: 100% 3px, 5px 100%;
-            pointer-events: none;
+            z-index: 99998; background-size: 100% 3px, 5px 100%; pointer-events: none;
         }
 
-        body::after {
-            content: " ";
-            display: block;
-            position: fixed;
-            top: 0; left: 0; bottom: 0; right: 0;
-            background: rgba(0, 255, 51, 0.02);
-            opacity: 0;
-            z-index: 99997;
-            pointer-events: none;
-            animation: crt-flicker 0.15s infinite;
-        }
-
-        @keyframes crt-flicker {
-            0% { opacity: 0.15; }
-            50% { opacity: 0.22; }
-            100% { opacity: 0.18; }
-        }
-
-        /* --- SYSTÈME DE GLITCH / GRÉSILLEMENT ALÉATOIRE --- */
+        /* --- GLITCH DE GRÉSILLEMENT --- */
         .glitch-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: repeating-linear-gradient(
-                0deg,
-                rgba(0, 255, 51, 0.15),
-                rgba(0, 255, 51, 0.15) 2px,
-                transparent 2px,
-                transparent 4px
-            );
-            pointer-events: none;
-            z-index: 99999;
-            display: none;
-            opacity: 0.8;
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: repeating-linear-gradient(0deg, rgba(0, 255, 51, 0.15), rgba(0, 255, 51, 0.15) 2px, transparent 2px, transparent 4px);
+            pointer-events: none; z-index: 99999; display: none; opacity: 0.8;
         }
 
-        /* --- ARRIÈRE-PLAN : ICÔNES RETRO FLOTTANTES (PIXELS) --- */
-        .floating-bg-icon {
-            position: absolute;
-            fill: none;
-            stroke: #00ff33;
-            stroke-width: 1.5;
-            stroke-linecap: square;
-            stroke-linejoin: miter;
-            opacity: 0.22;
-            filter: drop-shadow(0 0 4px rgba(0, 255, 51, 0.4));
-            animation: float-around 14s infinite ease-in-out;
-            z-index: 1;
+        /* --- FOND MATRICIEL : PLUIE DE CODE --- */
+        .code-rain-bg {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            z-index: 0; opacity: 0.08; pointer-events: none; overflow: hidden;
+            display: flex; justify-content: space-between; font-size: 8pt; line-height: 1;
         }
-        
-        #bg-icon-ps { width: 70px; height: 70px; top: 8%; left: 8%; animation-delay: 0s; }
+        .code-column {
+            display: flex; flex-direction: column; white-space: nowrap;
+            animation: fall linear infinite;
+        }
+        @keyframes fall {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
+
+        /* --- ICÔNES RETRO FLOTTANTES --- */
+        .floating-bg-icon {
+            position: absolute; fill: none; stroke: #00ff33; stroke-width: 1.5;
+            stroke-linecap: square; stroke-linejoin: miter; opacity: 0.18;
+            filter: drop-shadow(0 0 4px rgba(0, 255, 51, 0.4));
+            animation: float-around 14s infinite ease-in-out; z-index: 1;
+        }
+        #bg-icon-ps { width: 75px; height: 50px; top: 8%; left: 6%; animation-delay: 0s; }
         #bg-icon-ps1 { width: 65px; height: 65px; top: 22%; right: 10%; animation-delay: 3.5s; }
         #bg-icon-mini { width: 65px; height: 65px; bottom: 30%; left: 5%; animation-delay: 7s; }
         #bg-icon-phone { width: 65px; height: 65px; bottom: 12%; left: 45%; animation-delay: 10.5s; }
@@ -88,148 +65,121 @@
 
         @keyframes float-around {
             0%, 100% { transform: translateY(0) translateX(0) rotate(0deg); }
-            50% { transform: translateY(-20px) translateX(10px) rotate(6deg); }
+            50% { transform: translateY(-15px) translateX(8px) rotate(4deg); }
         }
 
-        /* --- POP-UP DES RÈGLES --- */
+        /* --- POP-UP DES RÈGLES (CACHÉE AU DÉBUT) --- */
         .modal-overlay {
-            position: fixed;
-            top: 0; left: 0; width: 100vw; height: 100vh;
-            background-color: rgba(4, 6, 8, 0.96);
-            z-index: 10000;
-            display: flex;
-            justify-content: center;
-            align-items: center;
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: rgba(4, 6, 8, 0.96); z-index: 10000;
+            display: none; justify-content: center; align-items: center;
         }
         .modal-box {
-            background-color: #0c111a;
-            border: 2px solid #00ff33;
-            border-radius: 8px;
-            width: 85%;
-            max-width: 400px;
-            padding: 20px;
-            box-shadow: 0 0 30px rgba(0, 255, 51, 0.3);
+            background-color: #0c111a; border: 2px solid #00ff33; border-radius: 8px;
+            width: 85%; max-width: 400px; padding: 20px; box-shadow: 0 0 30px rgba(0, 255, 51, 0.3);
             position: relative;
-            box-sizing: border-box;
         }
-        .modal-title {
-            font-size: 13pt; font-weight: bold; text-align: center; margin-top: 0;
-            border-bottom: 1px dashed #00ff33; padding-bottom: 10px; text-transform: uppercase;
-        }
+        .modal-title { font-size: 13pt; font-weight: bold; text-align: center; margin-top: 0; border-bottom: 1px dashed #00ff33; padding-bottom: 10px; }
         .modal-text { font-size: 10pt; line-height: 1.5; text-align: justify; margin: 15px 0; color: #e6edf3; }
         .channel-highlight { color: #ff3333; font-weight: bold; background: rgba(255, 51, 51, 0.1); padding: 2px 4px; }
         .modal-checkbox-zone { display: flex; align-items: center; gap: 10px; font-size: 9pt; margin-top: 20px; }
         .modal-checkbox-zone input { accent-color: #00ff33; width: 16px; height: 16px; }
-        .close-btn {
-            position: absolute; top: 10px; right: 15px; font-size: 16pt; cursor: pointer; color: #333;
-            pointer-events: none; transition: color 0.2s;
-        }
+        .close-btn { position: absolute; top: 10px; right: 15px; font-size: 16pt; cursor: pointer; color: #333; pointer-events: none; }
         .close-btn.active { color: #00ff33; pointer-events: auto; }
-        .modal-action-btn {
-            width: 100%; margin-top: 15px; background-color: #151d2a; color: #444;
-            border: 1px solid #222; padding: 12px; font-family: monospace; font-weight: bold; border-radius: 5px; pointer-events: none;
-        }
-        .modal-action-btn.active {
-            background-color: #00ff33; color: #040608; border: none; cursor: pointer; pointer-events: auto;
-            box-shadow: 0 0 15px rgba(0, 255, 51, 0.4);
-        }
+        .modal-action-btn { width: 100%; margin-top: 15px; background-color: #151d2a; color: #444; border: 1px solid #222; padding: 12px; font-family: monospace; font-weight: bold; border-radius: 5px; pointer-events: none; }
+        .modal-action-btn.active { background-color: #00ff33; color: #040608; border: none; cursor: pointer; pointer-events: auto; box-shadow: 0 0 15px rgba(0, 255, 51, 0.4); }
 
         /* --- INTERFACE DU TERMINAL ACCUEIL --- */
-        .terminal-container { z-index: 10; width: 90%; max-width: 400px; }
-        .terminal {
-            background-color: rgba(12, 17, 26, 0.91);
-            border: 2px solid #00ff33;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 0 25px rgba(0, 255, 51, 0.25);
-            box-sizing: border-box;
-        }
-        h1 { font-size: 17pt; text-align: center; margin: 0 0 5px 0; text-shadow: 0 0 8px rgba(0, 255, 51, 0.6); }
+        .terminal-container { z-index: 10; width: 90%; max-width: 400px; display: none; }
+        .terminal { background-color: rgba(12, 17, 26, 0.91); border: 2px solid #00ff33; border-radius: 10px; padding: 20px; box-shadow: 0 0 25px rgba(0, 255, 51, 0.25); }
+        h1 { font-size: 16pt; text-align: center; margin: 0 0 5px 0; text-shadow: 0 0 8px #00ff33; }
         .status { text-align: center; font-size: 9pt; color: #00aa22; margin-bottom: 20px; }
-        textarea {
-            width: 100%; height: 110px; background-color: #040608; color: #00ff33;
-            border: 1px solid #00ff33; border-radius: 5px; padding: 10px;
-            font-family: monospace; font-size: 11pt; resize: none; box-sizing: border-box;
-        }
+        textarea { width: 100%; height: 110px; background-color: #040608; color: #00ff33; border: 1px solid #00ff33; border-radius: 5px; padding: 10px; font-family: monospace; font-size: 11pt; resize: none; }
         textarea:focus { outline: none; box-shadow: 0 0 10px rgba(0, 255, 51, 0.5); }
-        
-        #submitBtn {
-            width: 100%; margin-top: 15px; background-color: #00ff33; color: #040608;
-            border: none; padding: 12px; font-size: 11pt; font-weight: bold;
-            font-family: monospace; cursor: pointer; border-radius: 5px; transition: all 0.2s;
+        #submitBtn { width: 100%; margin-top: 15px; background-color: #00ff33; color: #040608; border: none; padding: 12px; font-size: 11pt; font-weight: bold; font-family: monospace; cursor: pointer; border-radius: 5px; }
+        #submitBtn:disabled { background-color: #142218 !important; color: #005511 !important; border: 1px solid #003300; cursor: not-allowed; }
+
+        /* --- ÉCRAN 1 : BOOT INITIAL (PC -> ESP32 -> MINITEL LIGNE DROITE) --- */
+        #boot-screen {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background-color: #040608; z-index: 10005;
+            display: flex; flex-direction: column; justify-content: center; align-items: center;
         }
-        #submitBtn:hover { background-color: #00cc22; box-shadow: 0 0 15px rgba(0, 255, 51, 0.4); }
-        #submitBtn:disabled {
-            background-color: #142218 !important; color: #005511 !important;
-            border: 1px solid #003300; cursor: not-allowed; box-shadow: none !important;
+        .boot-scene { position: relative; width: 360px; height: 120px; display: flex; justify-content: space-between; align-items: center; padding: 0 10px; }
+        .boot-line { position: absolute; top: 50%; left: 45px; width: 270px; height: 2px; border-top: 2px dashed rgba(0, 255, 51, 0.4); z-index: 1; transform: translateY(-50%); }
+        
+        .boot-folder {
+            position: absolute; width: 22px; height: 22px; fill: #00ff33; top: 50%; left: 35px;
+            transform: translateY(-50%);
+            animation: boot-flow 2.5s infinite linear; z-index: 2; filter: drop-shadow(0 0 6px #00ff33);
+        }
+        @keyframes boot-flow {
+            0% { left: 35px; }
+            100% { left: 300px; }
         }
 
-        /* --- ÉCRAN D'ANIMATION --- */
+        .esp32-node {
+            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+            width: 40px; height: 30px; background: #040608; border: 2px solid #00ff33;
+            border-radius: 4px; z-index: 3; display: flex; justify-content: center; align-items: center;
+            font-size: 7pt; font-weight: bold; box-shadow: 0 0 10px #00ff33;
+        }
+
+        /* --- ÉCRAN 2 : ENVOI MESSAGE (SACCADÉ ÉLECTRIQUE) --- */
         #animation-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: #040608; z-index: 9999;
             flex-direction: column; justify-content: center; align-items: center;
         }
         .scene { position: relative; width: 320px; height: 200px; }
-        .road-arc {
-            position: absolute; top: 50px; left: 35px; width: 250px; height: 250px;
-            border: 3px dashed #00ff33; border-radius: 50%;
-            clip-path: inset(0 0 50% 0); filter: drop-shadow(0 0 4px #00ff33);
-        }
-        .moving-folder {
-            position: absolute; width: 28px; height: 28px; fill: #00ff33;
-            offset-path: path('M 35 175 A 125 125 0 0 1 285 175');
-            animation: electric-travel 3s infinite linear; filter: drop-shadow(0 0 8px #00ff33);
-        }
-
-        /* Trajectoire alternative / électrique saccadée */
+        .road-arc { position: absolute; top: 50px; left: 35px; width: 250px; height: 250px; border: 3px dashed #00ff33; border-radius: 50%; clip-path: inset(0 0 50% 0); filter: drop-shadow(0 0 4px #00ff33); }
+        .moving-folder { position: absolute; width: 28px; height: 28px; fill: #00ff33; offset-path: path('M 35 175 A 125 125 0 0 1 285 175'); animation: electric-travel 3s infinite linear; filter: drop-shadow(0 0 8px #00ff33); }
+        
         @keyframes electric-travel {
-            0% { offset-distance: 0%; }
-            12% { offset-distance: 25%; }
-            15% { offset-distance: 20%; }
-            25% { offset-distance: 20%; }
-            38% { offset-distance: 55%; }
-            42% { offset-distance: 50%; }
-            55% { offset-distance: 50%; }
-            70% { offset-distance: 85%; }
-            75% { offset-distance: 80%; }
-            88% { offset-distance: 80%; }
-            100% { offset-distance: 100%; }
+            0% { offset-distance: 0%; } 12% { offset-distance: 25%; } 15% { offset-distance: 20%; } 25% { offset-distance: 20%; }
+            38% { offset-distance: 55%; } 42% { offset-distance: 50%; } 55% { offset-distance: 50%; } 70% { offset-distance: 85%; }
+            75% { offset-distance: 80%; } 88% { offset-distance: 80%; } 100% { offset-distance: 100%; }
         }
         
-        .hardware-icon { position: absolute; bottom: 5px; fill: none; stroke: #00ff33; stroke-width: 1.5; filter: drop-shadow(0 0 6px #00ff33); }
-        .icon-left { left: 5px; }
-        .icon-right { right: 5px; }
+        .hardware-icon { position: absolute; bottom: 5px; fill: none; stroke: #00ff33; stroke-width: 1.5; filter: drop-shadow(0 0 6px #00ff33); z-index: 4; }
+        .icon-left { left: 5px; } .icon-right { right: 5px; }
 
-        /* Lignes blanches sur l'écran du Minitel pendant l'envoi */
-        .minitel-screen-lines {
-            position: absolute; top: 10px; left: 9px; width: 24px; height: 16px;
-            display: flex; flex-direction: column; gap: 2px; justify-content: flex-start;
-            overflow: hidden;
-        }
-        .line-white {
-            width: 100%; height: 2px; background-color: #ffffff;
-            box-shadow: 0 0 2px #ffffff; width: 0%;
-            animation: write-line 10s linear forwards;
-        }
-        .line-white:nth-child(2) { animation-delay: 2.5s; }
-        .line-white:nth-child(3) { animation-delay: 5s; }
-        .line-white:nth-child(4) { animation-delay: 7.5s; }
-
+        .minitel-screen-lines { position: absolute; top: 10px; left: 9px; width: 24px; height: 16px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
+        .line-white { width: 0%; height: 2px; background-color: #ffffff; box-shadow: 0 0 2px #ffffff; animation: write-line 10s linear forwards; }
+        .line-white:nth-child(2) { animation-delay: 2.5s; } .line-white:nth-child(3) { animation-delay: 5s; } .line-white:nth-child(4) { animation-delay: 7.5s; }
         @keyframes write-line { to { width: 100%; } }
 
-        .progress-container { width: 260px; height: 10px; border: 1px solid #00ff33; margin-top: 30px; padding: 2px; border-radius: 3px; }
-        .progress-bar {
-            height: 100%; background-color: #00ff33; width: 0%;
-            animation: load 10s linear forwards; box-shadow: 0 0 8px #00ff33;
-        }
+        .progress-container { width: 260px; height: 10px; border: 1px solid #00ff33; margin-top: 30px; padding: 2px; border-radius: 3px; z-index: 5; }
+        .progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load 10s linear forwards; box-shadow: 0 0 8px #00ff33; }
+        .boot-progress-container { width: 260px; height: 10px; border: 1px solid #00ff33; margin-top: 20px; padding: 2px; border-radius: 3px; }
+        .boot-progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load 5s linear forwards; box-shadow: 0 0 8px #00ff33; }
+        
         @keyframes load { to { width: 100%; } }
-        .loading-text { margin-top: 15px; font-size: 10pt; width: 280px; text-align: center; letter-spacing: 1px; }
+        .loading-text { margin-top: 15px; font-size: 10pt; width: 280px; text-align: center; letter-spacing: 1px; z-index: 5; }
     </style>
 </head>
 <body>
 
+    <div class="code-rain-bg" id="codeRain"></div>
+
     <div class="glitch-overlay" id="glitchBlock"></div>
+
+    <div id="boot-screen">
+        <div class="boot-scene">
+            <div class="boot-line"></div>
+            <svg class="boot-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
+            
+            <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
+            
+            <div class="esp32-node">ESP32</div>
+            
+            <div style="position: relative; width: 45px; height: 45px;">
+                <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/></svg>
+            </div>
+        </div>
+        <div class="boot-progress-container"><div class="boot-progress-bar"></div></div>
+        <div class="loading-text" style="color:#00ff33;">INITIALISATION SYSTEME...<br>BOOT ESP32 OK</div>
+    </div>
 
     <div class="modal-overlay" id="rulesModal">
         <div class="modal-box">
@@ -248,10 +198,12 @@
         </div>
     </div>
 
-    <svg class="floating-bg-icon" id="bg-icon-ps" viewBox="0 0 40 40">
-        <path d="M6,14 H14 V12 H26 V14 H34 V22 H30 V18 H10 V22 H6 Z M6,22 L10,26 H14 L12,18 H8 Z M34,22 L30,26 H26 L28,18 H32 Z"/>
-        <path d="M9,15 H11 V17 H9 Z M7,16 H13 V17 H7 Z M29,15 H31 V16 H29 Z M27,16 H33 V17 H27 Z"/>
-        <path d="M20,12 V6 H15 V2 H19 M17,1 H22 V3 H17 Z M16,2 H17 V3 H16 Z M22,2 H23 V3 H23 Z"/>
+    <svg class="floating-bg-icon" id="bg-icon-ps" viewBox="0 0 40 26">
+        <path d="M 6,2 H 34 A 4,4 0 0 1 38,6 V 16 A 6,6 0 0 1 32,22 L 28,18 H 12 L 8,22 A 6,6 0 0 1 2,16 V 6 A 4,4 0 0 1 6,2 Z"/>
+        <path d="M 7,11 H 11 V 7 H 13 V 11 H 17 V 13 H 13 V 17 H 11 V 13 H 7 Z" fill="#00ff33"/>
+        <rect x="29" y="8" width="3" height="3" fill="#00ff33"/><rect x="25" y="12" width="3" height="3" fill="#00ff33"/>
+        <rect x="33" y="12" width="3" height="3" fill="#00ff33"/><rect x="29" y="16" width="3" height="3" fill="#00ff33"/>
+        <path d="M 20,2 V 0 H 16 V -4 H 24"/>
     </svg>
 
     <svg class="floating-bg-icon" id="bg-icon-ps1" viewBox="0 0 40 40">
@@ -259,18 +211,15 @@
         <path d="M12,20 A 8,8 0 1,0 28,20 A 8,8 0 1,0 12,20 Z"/>
         <text x="15" y="23" font-family="monospace" font-size="6px" font-weight="bold" fill="none" stroke="#00ff33" stroke-width="0.7">PS1</text>
         <rect x="7" y="10" width="4" height="4"/><rect x="7" y="26" width="4" height="4"/>
-        <path d="M10,34 H16 V35 H10 Z M24,34 H30 V35 H24 Z"/>
     </svg>
 
     <svg class="floating-bg-icon" id="bg-icon-mini" viewBox="0 0 45 45">
         <path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z"/>
-        <rect x="8" y="28" width="3" height="2"/><rect x="14" y="28" width="2" height="1"/>
     </svg>
 
     <svg class="floating-bg-icon" id="bg-icon-phone" viewBox="0 0 40 40">
-        <path d="M10,20 H30 L34,34 H6 Z M16,16 H24 V20 H16 Z M14,14 H17 V17 H14 Z M23,14 H26 V17 H23 Z M15,27 A 4,4 0 1,0 25,27 A 4,4 0 1,0 15,27 Z"/>
-        <circle cx="20" cy="27" r="1"/>
-        <path d="M8,10 H32 V13 H8 Z M6,7 H10 V11 H6 Z M30,7 H34 V11 H34 Z"/>
+        <path d="M10,20 H30 L34,34 H6 Z M16,16 H24 V20 H16 Z M15,27 A 4,4 0 1,0 25,27 A 4,4 0 1,0 15,27 Z"/>
+        <path d="M8,10 H32 V13 H8 Z M6,7 H10 V11 H6 Z M30,7 H34 V11 Z"/>
     </svg>
 
     <svg class="floating-bg-icon" id="bg-icon-pc" viewBox="0 0 32 32"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M2,26 H30 V28 H2 Z"/></svg>
@@ -290,49 +239,61 @@
     <div id="animation-screen">
         <div class="scene">
             <div class="road-arc"></div>
-
             <svg class="moving-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-
             <svg class="hardware-icon icon-left" width="45" height="45" viewBox="0 0 32 32"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
 
             <div class="hardware-icon icon-right" style="position: absolute; right: 5px; width: 45px; height: 45px;">
                 <svg width="45" height="45" viewBox="0 0 45 45" fill="none" stroke="#00ff33" stroke-width="1.5">
                     <path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/>
-                    <rect x="8" y="28" width="3" height="2"/><rect x="14" y="28" width="2" height="1"/>
                 </svg>
                 <div class="minitel-screen-lines">
-                    <div class="line-white"></div>
-                    <div class="line-white"></div>
-                    <div class="line-white"></div>
-                    <div class="line-white"></div>
+                    <div class="line-white"></div><div class="line-white"></div><div class="line-white"></div><div class="line-white"></div>
                 </div>
             </div>
         </div>
-
         <div class="progress-container"><div class="progress-bar"></div></div>
         <div class="loading-text">CONNEXION ESP32...<br>TRANSMISSION EN COURS</div>
     </div>
 
     <script>
-        // Moteur de glitch CRT grésillant et irrégulier (Toutes les 3 à 7 secondes)
+        // --- GÉNÉRATEUR DE PLUIE DE CODE MINI-MATRIX ---
+        const bgContainer = document.getElementById('codeRain');
+        const columnsCount = Math.floor(window.innerWidth / 25);
+        const codePhrases = ["ESP32_CONNECT", "GND_OK", "BAUD_4800", "AT+SEND", "REG_OK", "MINITEL_9", "RX_DATA_1", "TX_BUSY", "BUFFER_CLEAR", "01001001"];
+        
+        for (let i = 0; i < columnsCount; i++) {
+            let col = document.createElement('div');
+            col.className = "code-column";
+            col.style.animationDuration = `${Math.random() * 5 + 4}s`;
+            col.style.animationDelay = `${Math.random() * 5}s`;
+            let textBlock = "";
+            for (let j = 0; j < 15; j++) {
+                textBlock += codePhrases[Math.floor(Math.random() * codePhrases.length)] + "<br>";
+            }
+            col.innerHTML = textBlock;
+            bgContainer.appendChild(col);
+        }
+
+        // --- CYCLE DE BOOT INITIAL (5 secondes) ---
+        setTimeout(() => {
+            document.getElementById('boot-screen').style.display = 'none';
+            document.getElementById('rulesModal').style.display = 'flex';
+        }, 5000);
+
+        // --- GLITCH ÉCRAN INCORRECT CRT (Aléatoire) ---
         function triggerGlitch() {
             const glitch = document.getElementById('glitchBlock');
             glitch.style.display = 'block';
-            
-            // Redimensionne et décale une zone au hasard pour faire un grésillement asymétrique
-            glitch.style.height = `${Math.random() * 30 + 10}%`;
-            glitch.style.top = `${Math.random() * 70}%`;
-            
+            glitch.style.height = `${Math.random() * 25 + 10}%`;
+            glitch.style.top = `${Math.random() * 75}%`;
             setTimeout(() => {
                 glitch.style.display = 'none';
-                // Calcul d'un intervalle irrégulier (entre 3000ms et 7000ms)
-                const nextGlitchTime = Math.random() * 4000 + 3000;
-                setTimeout(triggerGlitch, nextGlitchTime);
-            }, Math.random() * 200 + 100); // Le grésillement dure entre 100 et 300ms
+                setTimeout(triggerGlitch, Math.random() * 4000 + 3000);
+            }, Math.random() * 200 + 100);
         }
         triggerGlitch();
 
-        // Gestion Pop-up des règles
+        // --- POP-UP DES RÈGLES ---
         function toggleModalButtons() {
             const isChecked = document.getElementById('acceptCheck').checked;
             const closeX = document.getElementById('modalCloseX');
@@ -347,10 +308,11 @@
         function closeModal() {
             if (document.getElementById('acceptCheck').checked) {
                 document.getElementById('rulesModal').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'block';
             }
         }
 
-        // Bloqueur de Spam (LocalStorage Anti-Refresh)
+        // --- TIMER ANTI-SPAM ---
         const cooldownTime = 120;
         const submitBtn = document.getElementById('submitBtn');
         const textarea = document.getElementById('msgTextarea');
@@ -373,16 +335,15 @@
                 }
             }
         }
-
         window.onload = function() { updateTimer(); };
 
-        // Lancement de la transmission
+        // --- EVENT FORMULAIRE ENVOI ---
         document.getElementById('msgForm').addEventListener('submit', function(e) {
             e.preventDefault();
             localStorage.setItem('minitel_last_submit', Math.floor(Date.now() / 1000));
             document.getElementById('main-interface').style.display = 'none';
             document.getElementById('animation-screen').style.display = 'flex';
-            setTimeout(() => { this.submit(); }, 10000); // 10 secondes réelles de chargement
+            setTimeout(() => { this.submit(); }, 10000);
         });
     </script>
 </body>
