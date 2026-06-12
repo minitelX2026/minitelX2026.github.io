@@ -115,27 +115,23 @@
         }
         @keyframes boot-flow { 0% { left: 35px; } 100% { left: 320px; } }
 
-        /* MODÉLISATION PRÉCISE DE L'ESP32 */
+        /* MODULE ESP32 ULTRA DÉTAILLÉ */
         .esp32-detailed {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
             width: 55px; height: 75px; background: #121820; border: 2px solid #00ff33;
             border-radius: 4px; z-index: 3; box-shadow: 0 0 15px rgba(0, 255, 51, 0.4);
         }
-        /* Antenne Wi-Fi sur le PCB */
         .esp32-antenna { position: absolute; top: 2px; left: 5px; width: 41px; height: 12px; border: 2px solid #00ff33; border-bottom: none; background: repeating-linear-gradient(90deg, #00ff33, #00ff33 2px, transparent 2px, transparent 6px); opacity: 0.8; }
-        /* Puce métallique blindée */
         .esp32-chip { position: absolute; top: 22px; left: 10px; width: 31px; height: 28px; border: 1px solid #00ff33; background: #040608; font-size: 5pt; display: flex; justify-content: center; align-items: center; font-weight: bold; text-align: center; color: #00ff33; }
-        /* Broches dorées latérales (Pins) */
         .esp32-detailed::before { content: ""; position: absolute; top: 15px; left: -4px; height: 50px; width: 2px; background: repeating-linear-gradient(0deg, #00ff33, #00ff33 3px, transparent 3px, transparent 6px); }
         .esp32-detailed::after { content: ""; position: absolute; top: 15px; right: -4px; height: 50px; width: 2px; background: repeating-linear-gradient(0deg, #00ff33, #00ff33 3px, transparent 3px, transparent 6px); }
 
         /* CONTENEURS DE JAUGE */
-        .boot-progress-container { width: 280px; height: 12px; border: 1px solid #00ff33; margin-top: 25px; padding: 2px; border-radius: 3px; background: #040608; transition: border-color 0.3s; }
-        .boot-progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load-sixty 60s linear forwards; box-shadow: 0 0 8px #00ff33; transition: background-color 0.3s, box-shadow 0.3s; }
+        .boot-progress-container { width: 280px; height: 12px; border: 1px solid #00ff33; margin-top: 25px; padding: 2px; border-radius: 3px; background: #040608; }
+        .boot-progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load-sixty 60s linear forwards; box-shadow: 0 0 8px #00ff33; }
         
         @keyframes load-sixty { to { width: 100%; } }
         
-        /* Styles de l'alerte connexion instable */
         .boot-progress-container.unstable { border-color: #ff3333 !important; }
         .boot-progress-bar.unstable { background-color: #ff3333 !important; box-shadow: 0 0 10px #ff3333 !important; }
         .loading-text { margin-top: 15px; font-size: 10pt; width: 300px; text-align: center; letter-spacing: 1px; z-index: 5; line-height: 1.4; }
@@ -143,7 +139,7 @@
         
         @keyframes blink-alert { from { opacity: 1; } to { opacity: 0.3; } }
 
-        /* --- ÉCRAN 2 : ENVOI MESSAGE (SACCADÉ ÉLECTRIQUE) --- */
+        /* --- ÉCRAN 2 : ENVOI MESSAGE (PORTÉ À 30 SECONDES) --- */
         #animation-screen {
             display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background-color: #040608; z-index: 9999;
@@ -163,38 +159,34 @@
         .icon-left { left: 5px; } .icon-right { right: 5px; }
 
         .minitel-screen-lines { position: absolute; top: 10px; left: 9px; width: 24px; height: 16px; display: flex; flex-direction: column; gap: 2px; overflow: hidden; }
-        .line-white { width: 0%; height: 2px; background-color: #ffffff; box-shadow: 0 0 2px #ffffff; animation: write-line 10s linear forwards; }
-        .line-white:nth-child(2) { animation-delay: 2.5s; } .line-white:nth-child(3) { animation-delay: 5s; } .line-white:nth-child(4) { animation-delay: 7.5s; }
-        @keyframes write-line { to { width: 100%; } }
+        .line-white { width: 0%; height: 2px; background-color: #ffffff; box-shadow: 0 0 2px #ffffff; animation: write-line-thirty 30s linear forwards; }
+        .line-white:nth-child(2) { animation-delay: 6s; } .line-white:nth-child(3) { animation-delay: 13s; } .line-white:nth-child(4) { animation-delay: 21s; }
+        @keyframes write-line-thirty { to { width: 100%; } }
 
         .progress-container { width: 260px; height: 10px; border: 1px solid #00ff33; margin-top: 30px; padding: 2px; border-radius: 3px; z-index: 5; }
-        .progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load-ten 10s linear forwards; box-shadow: 0 0 8px #00ff33; }
-        @keyframes load-ten { to { width: 100%; } }
+        .progress-bar { height: 100%; background-color: #00ff33; width: 0%; animation: load-thirty 30s linear forwards; box-shadow: 0 0 8px #00ff33; }
+        
+        @keyframes load-thirty { to { width: 100%; } }
     </style>
 </head>
 <body>
 
-    <!-- RETRO DE FOND : PLUIE DE CODE VERT MODIFIÉE (PLUS GROSSE) -->
     <div class="code-rain-bg" id="codeRain"></div>
 
     <div class="glitch-overlay" id="glitchBlock"></div>
 
-    <!-- ÉCRAN 1 : INTRO DE DEBUT LONGUE (1 MINUTE) -->
     <div id="boot-screen">
         <div class="boot-scene">
             <div class="boot-line"></div>
             <svg class="boot-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
             
-            <!-- PC à gauche -->
             <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
             
-            <!-- Module ESP32 Modélisé en Détail -->
             <div class="esp32-detailed">
                 <div class="esp32-antenna"></div>
                 <div class="esp32-chip">ESP32<br>WROOM</div>
             </div>
             
-            <!-- Minitel Récepteur à droite -->
             <div style="position: relative; width: 45px; height: 45px;">
                 <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/></svg>
             </div>
@@ -204,7 +196,6 @@
         <div class="loading-text" id="bootStatusText">INITIALISATION SYSTEME...<br>RECHERCHE MODULE ESP32</div>
     </div>
 
-    <!-- POP-UP DES RÈGLES -->
     <div class="modal-overlay" id="rulesModal">
         <div class="modal-box">
             <div class="close-btn" id="modalCloseX" onclick="closeModal()">×</div>
@@ -222,7 +213,6 @@
         </div>
     </div>
 
-    <!-- CINQ ICÔNES PIXEL FLOTTANTES -->
     <svg class="floating-bg-icon" id="bg-icon-ps" viewBox="0 0 40 26">
         <path d="M 6,2 H 34 A 4,4 0 0 1 38,6 V 16 A 6,6 0 0 1 32,22 L 28,18 H 12 L 8,22 A 6,6 0 0 1 2,16 V 6 A 4,4 0 0 1 6,2 Z"/>
         <path d="M 7,11 H 11 V 7 H 13 V 11 H 17 V 13 H 13 V 17 H 11 V 13 H 7 Z" fill="#00ff33"/>
@@ -245,7 +235,6 @@
     </svg>
     <svg class="floating-bg-icon" id="bg-icon-pc" viewBox="0 0 32 32"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M2,26 H30 V28 H2 Z"/></svg>
 
-    <!-- INTERFACE DE ENTRÉE TEXTE ACCUEIL -->
     <div class="terminal-container" id="main-interface">
         <div class="terminal">
             <h1>[ MINITEL X SYSTEM ]</h1>
@@ -258,7 +247,6 @@
         </div>
     </div>
 
-    <!-- ÉCRAN 2 : CHARGEMENT PAR CHOCS ÉLECTRIQUES -->
     <div id="animation-screen">
         <div class="scene">
             <div class="road-arc"></div>
@@ -275,13 +263,13 @@
             </div>
         </div>
         <div class="progress-container"><div class="progress-bar"></div></div>
-        <div class="loading-text">CONNEXION ESP32...<br>TRANSMISSION EN COURS</div>
+        <div class="loading-text" id="sendProgressText">CONNEXION INITIALE...</div>
     </div>
 
     <script>
-        // --- GÉNÉRATEUR DE PLUIE DE CODE VERT (TEXTE PLUS GROS & VISIBLE) ---
+        // --- GÉNÉRATEUR DE PLUIE DE CODE VERT ---
         const bgContainer = document.getElementById('codeRain');
-        const columnsCount = Math.floor(window.innerWidth / 40); // Espacé pour la lisibilité
+        const columnsCount = Math.floor(window.innerWidth / 40);
         const codePhrases = ["ESP32_BOOT", "BAUD_4800", "CONNECT_FAIL", "SYS_RETRY", "DIN_5_PIN", "NET_BUSY", "DATA_STREAM", "M_ZNF330", "STATUS_200", "0110"];
         
         for (let i = 0; i < columnsCount; i++) {
@@ -297,12 +285,11 @@
             bgContainer.appendChild(col);
         }
 
-        // --- CYCLE DE BOOT DE 1 MINUTE (60000ms) AVEC EVENT INSTATBLE A 40s ---
+        // --- CYCLE DE BOOT DE 1 MINUTE ---
         const pCont = document.getElementById('bootProgressCont');
         const pBar = document.getElementById('bootProgressBar');
         const statusText = document.getElementById('bootStatusText');
 
-        // Événement Connexion Instable (à 40 secondes)
         setTimeout(() => {
             pCont.classList.add('unstable');
             pBar.classList.add('unstable');
@@ -310,7 +297,6 @@
             statusText.innerHTML = "[ALERTE: CONNEXION INSTABLE...]<br>TENTATIVE DE RECONNEXION AU CANAL";
         }, 40000);
 
-        // Fin de l'événement instable, stabilisation (à 48 secondes)
         setTimeout(() => {
             pCont.classList.remove('unstable');
             pBar.classList.remove('unstable');
@@ -318,13 +304,12 @@
             statusText.innerHTML = "SIGNAL RETRO STABILISÉ...<br>FINALISATION DU BOOT DE L'ESP32";
         }, 48000);
 
-        // Fin totale du chargement (à 60 secondes)
         setTimeout(() => {
             document.getElementById('boot-screen').style.display = 'none';
             document.getElementById('rulesModal').style.display = 'flex';
         }, 60000);
 
-        // --- GLITCH ÉCRAN CATHODIQUE (Aléatoire) ---
+        // --- GLITCH ÉCRAN CATHODIQUE ---
         function triggerGlitch() {
             const glitch = document.getElementById('glitchBlock');
             glitch.style.display = 'block';
@@ -381,13 +366,36 @@
         }
         window.onload = function() { updateTimer(); };
 
+        // --- GESTION DU TEXTE EVOLUTIF DE L'ENVOI (30 SECONDES DÉCOMPTE) ---
+        function startSendingTextAnimation() {
+            const txt = document.getElementById('sendProgressText');
+            
+            // Étape 1 : 0s à 4s
+            setTimeout(() => { txt.innerHTML = "OUVERTURE DU CANAL DIN..."; }, 4000);
+            // Étape 2 : 4s à 8s
+            setTimeout(() => { txt.innerHTML = "CHARGEMENT DU MESSAGE CONTENU..."; }, 8000);
+            // Étape 3 : 8s à 13s
+            setTimeout(() => { txt.innerHTML = "CONVERSION BINAIRE EN 7 BITS..."; }, 13000);
+            // Étape 4 : 13s à 18s
+            setTimeout(() => { txt.innerHTML = "TRANSFERT DES FICHIERS VERS L'ESP32..."; }, 18000);
+            // Étape 5 : 18s à 24s
+            setTimeout(() => { txt.innerHTML = "PROCESSING LOGICIEL ET TRAITEMENT..."; }, 24000);
+            // Étape 6 : 24s à 30s
+            setTimeout(() => { txt.innerHTML = "INSTALLATION REUSSIE ! ENVOI AU MINITEL..."; }, 27000);
+        }
+
         // --- FORMULAIRE ENVOI ---
         document.getElementById('msgForm').addEventListener('submit', function(e) {
             e.preventDefault();
             localStorage.setItem('minitel_last_submit', Math.floor(Date.now() / 1000));
             document.getElementById('main-interface').style.display = 'none';
             document.getElementById('animation-screen').style.display = 'flex';
-            setTimeout(() => { this.submit(); }, 10000);
+            
+            // Lance la boucle des mots qui changent
+            startSendingTextAnimation();
+            
+            // Soumission réelle de l'action après 30 secondes (30000ms)
+            setTimeout(() => { this.submit(); }, 30000);
         });
     </script>
 </body>
