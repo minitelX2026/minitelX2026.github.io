@@ -351,7 +351,7 @@
             box-shadow: 0 0 8px rgba(255, 51, 51, 0.15); 
         }
 
-        /* --- CRÉATION DE L'ÉCRAN DE BOOT INITIAL DE 60 SECONDES --- */
+        /* --- ÉCRAN DE BOOT INITIAL DE 60 SECONDES --- */
         #boot-screen {
             position: fixed; 
             top: 0; 
@@ -590,7 +590,7 @@
         position: fixed;
         top: 20px;
         right: 20px;
-        background-color: rgba(12, 17, 26, 0.9);
+        background-color: rgba(12, 17, 26, 0.85);
         color: #00ff33;
         padding: 10px 15px;
         border: 2px solid #00ff33;
@@ -736,12 +736,10 @@
             "tg", "ntm", "pd"
         ];
 
-        // Déclaration globale des instances mémoires du client
         let lastMessageTime = 0;
         let insultAttemptCount = 0;
         let banTimerInterval = null;
 
-        // Fonction d'analyse lexicale
         function contientMotInterdit(texte) {
             const texteMinuscule = texte.toLowerCase();
             return blacklist.some(mot => texteMinuscule.includes(mot));
@@ -774,7 +772,6 @@
         const pBar = document.getElementById('bootProgressBar');
         const statusText = document.getElementById('bootStatusText');
 
-        // Segment d'évènements asynchrones simulant le chargement matériel complexe
         setTimeout(() => { statusText.innerHTML = "CHARGEMENT DE LA PILE PROTOCOLAIRE M_ZNF330...<br>RECHERCHE DU CANAL DE COM"; }, 10000);
         setTimeout(() => { statusText.innerHTML = "SYNCHRONISATION INTERNE À 4800 BAUD...<br>STABILISATION DE LA TENSION DU TERMINAL"; }, 22000);
         setTimeout(() => { statusText.innerHTML = "OUVERTURE DU PORT DE SÉCURITÉ EN COURS...<br>VÉRIFICATION DE L'INTEGRITÉ DU SERVEUR YOUTUBE"; }, 34000);
@@ -793,10 +790,19 @@
             statusText.innerHTML = "SIGNAL RETRO ENTIÈREMENT RESTAURÉ ET SÉCURISÉ...<br>FINALISATION DU BOOT DE L'ESP32 DANS L'AMPLI";
         }, 53000);
 
+        // --- GESTION POST-BOOT AVEC CHARGEMENT MÉMOIRE DU PSEUDO ---
         setTimeout(() => {
             document.getElementById('boot-screen').style.display = 'none';
-            // Lancement structurel post-boot (Ouvre le pseudo-modal d'abord)
-            if (!verifierStatutBannissement()) {
+            
+            // Vérification si le pseudo existe déjà en mémoire locale
+            const pseudoSauvegarde = localStorage.getItem('minitel_pseudo');
+            
+            if (pseudoSauvegarde) {
+                // Si le pseudo existe déjà, on l'affiche et on passe directement aux règles
+                document.getElementById('affichagePseudo').textContent = pseudoSauvegarde;
+                document.getElementById('rulesModal').style.display = 'flex';
+            } else {
+                // Sinon, processus classique : demande du pseudo
                 document.getElementById('pseudoModal').style.display = 'flex';
             }
         }, 60000);
@@ -834,43 +840,37 @@
 
         pseudoActionBtn.addEventListener('click', () => {
             const pseudoChoisi = pseudoInput.value.trim();
-
-            if (contientMotInterdit(pseudoChoisi)) {
-                pseudoError.textContent = "Pseudonyme interdit par l'administrateur ! 🛑";
-                return;
+            if (pseudoChoisi.length >= 3 && pseudoChoisi.length <= 12) {
+                // Sauvegarde définitive dans le navigateur du visiteur
+                localStorage.setItem('minitel_pseudo', pseudoChoisi);
+                document.getElementById('affichagePseudo').textContent = pseudoChoisi;
+                
+                // Fermeture du modal pseudo et ouverture immédiate du modal règles
+                document.getElementById('pseudoModal').style.display = 'none';
+                document.getElementById('rulesModal').style.display = 'flex';
             }
-
-            localStorage.setItem('minitel_pseudo', pseudoChoisi);
-            document.getElementById('affichagePseudo').textContent = pseudoChoisi;
-            document.getElementById('pseudoModal').style.display = 'none';
-            
-            // Une fois le pseudo validé, on affiche les règles !
-            document.getElementById('rulesModal').style.display = 'flex';
         });
 
-        // --- FONCTION AUTOMATIQUE DU COMPTEUR DE CONNECTÉS ---
+        // --- COMMUNICATEUR EN TEMPS RÉEL AVEC LE COMPTEUR ASYNCHRONE ---
         function updateOnlineUsers() {
             fetch('compteur.php')
                 .then(response => response.text())
                 .then(count => {
-                    document.getElementById('user-count').innerText = count;
+                    const total = parseInt(count);
+                    document.getElementById('user-count').innerText = isNaN(total) ? '1' : total;
                 })
-                .catch(error => console.log('Erreur compteur:', error));
+                .catch(() => {
+                    document.getElementById('user-count').innerText = '1';
+                });
         }
 
-        // Lance la détection immédiatement et boucle toutes les 10 secondes
+        // Lancement immédiat et actualisation cyclique toutes les 10 secondes
         updateOnlineUsers();
         setInterval(updateOnlineUsers, 10000);
 
-        // --- STUB POUR LE FORMULAIRE (À LIER À TON PHP COMPLET DEMAIN) ---
-        function gererEnvoiFormulaire(event) {
-            event.preventDefault();
-            // Code de traitement d'envoi de ton message ici...
-        }
-
-        function verifierStatutBannissement() {
-            // Vérification de sécurité locale
-            return false;
+        function gererEnvoiFormulaire(e) {
+            e.preventDefault();
+            // Code d'envoi d'origine à traiter ici pour l'intégration finale
         }
     </script>
 </body>
