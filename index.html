@@ -609,26 +609,21 @@
     </div>
 
     <div class="code-rain-bg" id="codeRain"></div>
-
     <div class="glitch-overlay" id="glitchBlock"></div>
 
     <div id="boot-screen">
         <div class="boot-scene">
             <div class="boot-line"></div>
             <svg class="boot-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            
             <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
-            
             <div class="esp32-detailed">
                 <div class="esp32-antenna"></div>
                 <div class="esp32-chip">ESP32<br>WROOM</div>
             </div>
-            
             <div style="position: relative; width: 45px; height: 45px;">
                 <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/></svg>
             </div>
         </div>
-        
         <div class="boot-progress-container" id="bootProgressCont"><div class="boot-progress-bar" id="bootProgressBar"></div></div>
         <div class="loading-text" id="bootStatusText">INITIALISATION DU SYSTEME...<br>RECHERCHE DU MODULE MATÉRIEL ESP32</div>
     </div>
@@ -658,7 +653,7 @@
             </div>
             <input type="text" id="pseudoInput" class="pseudo-input-field" placeholder="PSEUDO (3 À 12 CAR.)" maxlength="12">
             <div class="error-msg" id="pseudoError"></div>
-            <button class="modal-action-btn" id="pseudoActionBtn">ENREGISTRER LE PSEUDO</button>
+            <button class="modal-action-btn" id="pseudoActionBtn" onclick="validerPseudo()">ENREGISTRER LE PSEUDO</button>
         </div>
     </div>
 
@@ -667,14 +662,12 @@
         <path d="M 7,11 H 11 V 7 H 13 V 11 H 17 V 13 H 13 V 17 H 11 V 13 H 7 Z" fill="#00ff33"/>
         <rect x="29" y="8" width="3" height="3" fill="#00ff33"/><rect x="25" y="12" width="3" height="3" fill="#00ff33"/>
         <rect x="33" y="12" width="3" height="3" fill="#00ff33"/><rect x="29" y="16" width="3" height="3" fill="#00ff33"/>
-        <path d="M 20,2 V 0 H 16 V -4 H 24"/>
     </svg>
     
     <svg class="floating-bg-icon" id="bg-icon-ps1" viewBox="0 0 40 40">
         <path d="M4,8 H36 V32 H4 Z M4,8 L6,6 H34 L36,8 M4,32 L6,34 H34 L36,32"/>
         <path d="M12,20 A 8,8 0 1,0 28,20 A 8,8 0 1,0 12,20 Z"/>
-        <text x="15" y="23" font-family="monospace" font-size="6px" font-weight="bold" fill="none" stroke="#00ff33" stroke-width="0.7">PS1</text>
-        <rect x="7" y="10" width="4" height="4"/><rect x="7" y="26" width="4" height="4"/>
+        <text x="14" y="22" font-family="monospace" font-size="5px" font-weight="bold" fill="none" stroke="#00ff33" stroke-width="0.5">PS1</text>
     </svg>
     
     <svg class="floating-bg-icon" id="bg-icon-mini" viewBox="0 0 45 45">
@@ -682,8 +675,7 @@
     </svg>
     
     <svg class="floating-bg-icon" id="bg-icon-phone" viewBox="0 0 40 40">
-        <path d="M10,20 H30 L34,34 H6 Z M16,16 H24 V20 H16 Z M15,27 A 4,4 0 1,0 25,27 A 4,4 0 1,0 15,27 Z"/>
-        <path d="M8,10 H32 V13 H8 Z M6,7 H10 V11 H6 Z M30,7 H34 V11 Z"/>
+        <path d="M10,20 H30 L34,34 H6 Z M16,16 H24 V20 H16 Z"/>
     </svg>
     
     <svg class="floating-bg-icon" id="bg-icon-pc" viewBox="0 0 32 32">
@@ -738,14 +730,13 @@
 
         let lastMessageTime = 0;
         let insultAttemptCount = 0;
-        let banTimerInterval = null;
 
         function contientMotInterdit(texte) {
             const texteMinuscule = texte.toLowerCase();
             return blacklist.some(mot => texteMinuscule.includes(mot));
         }
 
-        // --- GÉNÉRATEUR DE PLUIE DE MATRICE DE SYMBOLES DE CODE EN TEMPS RÉEL ---
+        // --- GÉNÉRATEUR DE PLUIE DE MATRICE DE SYMBOLES ---
         const bgContainer = document.getElementById('codeRain');
         const columnsCount = Math.floor(window.innerWidth / 35);
         const codePhrases = [
@@ -790,24 +781,41 @@
             statusText.innerHTML = "SIGNAL RETRO ENTIÈREMENT RESTAURÉ ET SÉCURISÉ...<br>FINALISATION DU BOOT DE L'ESP32 DANS L'AMPLI";
         }, 53000);
 
-        // --- GESTION POST-BOOT AVEC CHARGEMENT MÉMOIRE DU PSEUDO ---
+        // --- ENTRÉE SUR L'INTERFACE APPRÈS LE BOOT ---
         setTimeout(() => {
             document.getElementById('boot-screen').style.display = 'none';
-            
-            // Vérification si le pseudo existe déjà en mémoire locale
             const pseudoSauvegarde = localStorage.getItem('minitel_pseudo');
             
             if (pseudoSauvegarde) {
-                // Si le pseudo existe déjà, on l'affiche et on passe directement aux règles
                 document.getElementById('affichagePseudo').textContent = pseudoSauvegarde;
                 document.getElementById('rulesModal').style.display = 'flex';
             } else {
-                // Sinon, processus classique : demande du pseudo
                 document.getElementById('pseudoModal').style.display = 'flex';
             }
-        }, 60000);
+        }, 60000); // 60 secondes de chargement pur style rétro !
 
-        // --- GESTION ADMINISTRATIVE DES POP-UPS ---
+        // --- VALIDATION DU PSEUDO ---
+        function validerPseudo() {
+            const input = document.getElementById('pseudoInput');
+            const erreur = document.getElementById('pseudoError');
+            const pseudo = input.value.trim();
+
+            if (pseudo.length < 3 || pseudo.length > 12) {
+                erreur.textContent = "LE PSEUDO DOIT FAIRE ENTRE 3 ET 12 CARACTÈRES !";
+                return;
+            }
+            if (contientMotInterdit(pseudo)) {
+                erreur.textContent = "PSEUDO INTERDIT PAR LE SYSTÈME DE VÉRIFICATION.";
+                return;
+            }
+
+            localStorage.setItem('minitel_pseudo', pseudo);
+            document.getElementById('affichagePseudo').textContent = pseudo;
+            document.getElementById('pseudoModal').style.display = 'none';
+            document.getElementById('rulesModal').style.display = 'flex';
+        }
+
+        // --- GESTION DES RÈGLES ---
         function toggleModalButtons() {
             const checkBox = document.getElementById('acceptCheck');
             const actionBtn = document.getElementById('modalActionBtn');
@@ -823,54 +831,73 @@
             document.getElementById('main-interface').style.display = 'block';
         }
 
-        // --- ENREGISTREMENT ET VÉRIFICATION DE SÉCURITÉ DU PSEUDO ---
-        const pseudoInput = document.getElementById('pseudoInput');
-        const pseudoActionBtn = document.getElementById('pseudoActionBtn');
-        const pseudoError = document.getElementById('pseudoError');
+        // --- TRANSMISSION DU MESSAGE ET ANIMATION DE 30 SECONDES ---
+        function gererEnvoiFormulaire(event) {
+            event.preventDefault();
+            
+            const textarea = document.getElementById('msgTextarea');
+            const message = textarea.value.trim();
+            const boutonEnvoi = document.getElementById('submitBtn');
+            const pseudo = localStorage.getItem('minitel_pseudo') || "Anonyme";
 
-        pseudoInput.addEventListener('input', () => {
-            const val = pseudoInput.value.trim();
-            if (val.length >= 3 && val.length <= 12) {
-                pseudoActionBtn.classList.add('active');
-                pseudoError.textContent = "";
-            } else {
-                pseudoActionBtn.classList.remove('active');
+            if (!message) return;
+
+            // Sécurité anti-insultes
+            if (contientMotInterdit(message)) {
+                alert("Votre message contient un mot banni. Restez poli !");
+                textarea.value = "";
+                return;
             }
-        });
 
-        pseudoActionBtn.addEventListener('click', () => {
-            const pseudoChoisi = pseudoInput.value.trim();
-            if (pseudoChoisi.length >= 3 && pseudoChoisi.length <= 12) {
-                // Sauvegarde définitive dans le navigateur du visiteur
-                localStorage.setItem('minitel_pseudo', pseudoChoisi);
-                document.getElementById('affichagePseudo').textContent = pseudoChoisi;
-                
-                // Fermeture du modal pseudo et ouverture immédiate du modal règles
-                document.getElementById('pseudoModal').style.display = 'none';
-                document.getElementById('rulesModal').style.display = 'flex';
-            }
-        });
+            // Bloquer le bouton pendant le chargement
+            boutonEnvoi.disabled = true;
 
-        // --- COMMUNICATEUR EN TEMPS RÉEL AVEC LE COMPTEUR ASYNCHRONE ---
-        function updateOnlineUsers() {
-            fetch('compteur.php')
-                .then(response => response.text())
-                .then(count => {
-                    const total = parseInt(count);
-                    document.getElementById('user-count').innerText = isNaN(total) ? '1' : total;
-                })
-                .catch(() => {
-                    document.getElementById('user-count').innerText = '1';
-                });
-        }
+            // Masquer l'interface et lancer le mode transmission (30 secondes)
+            document.getElementById('main-interface').style.display = 'none';
+            const animScreen = document.getElementById('animation-screen');
+            animScreen.style.display = 'flex';
 
-        // Lancement immédiat et actualisation cyclique toutes les 10 secondes
-        updateOnlineUsers();
-        setInterval(updateOnlineUsers, 10000);
+            const sendBar = document.getElementById('sendProgressBar');
+            const sendText = document.getElementById('sendProgressText');
+            
+            // Animation de la barre de progression customisée en JS
+            let progression = 0;
+            sendBar.style.width = "0%";
+            
+            const textesEtapes = [
+                "INJECTEUR DE CODE INITIALISÉ...",
+                "CONVERSION EN PROTOCOLE VIDEOTEX COMPATIBLE...",
+                "EMPAQUETAGE DES DONNÉES SÉRIALISÉES (TX2)...",
+                "PASSAGE PAR LA PASSERELLE ESP32 INTERNE...",
+                "TRANSMISSION EN COURS À 4800 BAUD...",
+                "ÉCRITURE SUR L'ÉCRAN CATHODIQUE DU MINITEL..."
+            ];
 
-        function gererEnvoiFormulaire(e) {
-            e.preventDefault();
-            // Code d'envoi d'origine à traiter ici pour l'intégration finale
+            const intervalTexte = setInterval(() => {
+                const phraseAleatoire = textesEtapes[Math.floor(Math.random() * textesEtapes.length)];
+                sendText.textContent = phraseAleatoire;
+            }, 5000);
+
+            const intervalBarre = setInterval(() => {
+                progression += 1;
+                sendBar.style.width = progression + "%";
+
+                if (progression >= 100) {
+                    clearInterval(intervalBarre);
+                    clearInterval(intervalTexte);
+                    
+                    // Fin de la transmission de 30 secondes
+                    animScreen.style.display = 'none';
+                    document.getElementById('main-interface').style.display = 'block';
+                    boutonEnvoi.disabled = false;
+                    textarea.value = ""; // Vider le champ de saisie
+                    
+                    alert("Message transmis avec succès au Minitel !");
+                }
+            }, 300); // 100 * 300ms = 30000ms soit pile 30 secondes !
+            
+            // --- ICI TU POURRAS PLACER TON FETCH POUR TON SCRIPT ESP32 ---
+            // fetch(`http://IP_DE_TON_ESP32/send?pseudo=${encodeURIComponent(pseudo)}&text=${encodeURIComponent(message)}`);
         }
     </script>
 </body>
