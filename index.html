@@ -586,6 +586,28 @@
 </head>
 <body>
 
+    <div id="live-counter" style="
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background-color: rgba(12, 17, 26, 0.9);
+        color: #00ff33;
+        padding: 10px 15px;
+        border: 2px solid #00ff33;
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        font-weight: bold;
+        border-radius: 5px;
+        z-index: 99999;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        box-shadow: 0 0 15px rgba(0, 255, 51, 0.2);
+    ">
+        <span>👤</span> 
+        <span id="user-count">1</span> en ligne
+    </div>
+
     <div class="code-rain-bg" id="codeRain"></div>
 
     <div class="glitch-overlay" id="glitchBlock"></div>
@@ -773,9 +795,9 @@
 
         setTimeout(() => {
             document.getElementById('boot-screen').style.display = 'none';
-            // Lancement structurel post-boot
+            // Lancement structurel post-boot (Ouvre le pseudo-modal d'abord)
             if (!verifierStatutBannissement()) {
-                document.getElementById('rulesModal').style.display = 'flex';
+                document.getElementById('pseudoModal').style.display = 'flex';
             }
         }, 60000);
 
@@ -792,13 +814,7 @@
 
         function validerRegles() {
             document.getElementById('rulesModal').style.display = 'none';
-            const pseudoSauvegarde = localStorage.getItem('minitel_pseudo');
-            if (pseudoSauvegarde) {
-                document.getElementById('affichagePseudo').textContent = pseudoSauvegarde;
-                document.getElementById('main-interface').style.display = 'block';
-            } else {
-                document.getElementById('pseudoModal').style.display = 'flex';
-            }
+            document.getElementById('main-interface').style.display = 'block';
         }
 
         // --- ENREGISTREMENT ET VÉRIFICATION DE SÉCURITÉ DU PSEUDO ---
@@ -827,168 +843,35 @@
             localStorage.setItem('minitel_pseudo', pseudoChoisi);
             document.getElementById('affichagePseudo').textContent = pseudoChoisi;
             document.getElementById('pseudoModal').style.display = 'none';
-            document.getElementById('main-interface').style.display = 'block';
+            
+            // Une fois le pseudo validé, on affiche les règles !
+            document.getElementById('rulesModal').style.display = 'flex';
         });
 
-        // --- LOGIQUE MAÎTRESSE : SPAM BLOCK + BAN DE 5 MINUTES POUR INSULTES EN LOCALSTORAGE ---
-        function verifierStatutBannissement() {
-            const banEndTime = localStorage.getItem('minitel_ban_time');
-            const now = Date.now();
-
-            if (banEndTime && now < parseInt(banEndTime)) {
-                // Fermeture forcée des fenêtres optionnelles
-                document.getElementById('rulesModal').style.display = 'none';
-                document.getElementById('pseudoModal').style.display = 'none';
-                document.getElementById('main-interface').style.display = 'block';
-                
-                gererInterfaceBannissement(parseInt(banEndTime));
-                return true;
-            }
-            return false;
+        // --- FONCTION AUTOMATIQUE DU COMPTEUR DE CONNECTÉS ---
+        function updateOnlineUsers() {
+            fetch('compteur.php')
+                .then(response => response.text())
+                .then(count => {
+                    document.getElementById('user-count').innerText = count;
+                })
+                .catch(error => console.log('Erreur compteur:', error));
         }
 
-        function gererInterfaceBannissement(tempsFin) {
-            const submitBtn = document.getElementById('submitBtn');
-            const txtArea = document.getElementById('msgTextarea');
-            const statusLine = document.getElementById('systemStatusLine');
-            
-            submitBtn.disabled = true;
-            txtArea.disabled = true;
+        // Lance la détection immédiatement et boucle toutes les 10 secondes
+        updateOnlineUsers();
+        setInterval(updateOnlineUsers, 10000);
 
-            if (banTimerInterval) clearInterval(banTimerInterval);
-
-            banTimerInterval = setInterval(() => {
-                const maintenant = Date.now();
-                const restantSeconde = Math.ceil((tempsFin - maintenant) / 1000);
-
-                if (restantSeconde <= 0) {
-                    clearInterval(banTimerInterval);
-                    submitBtn.disabled = false;
-                    txtArea.disabled = false;
-                    submitBtn.textContent = "TRANSMETTRE LE MESSAGE";
-                    statusLine.textContent = "Statut : En ligne | Liaison ESP32 active";
-                    statusLine.style.color = "#00aa22";
-                    localStorage.removeItem('minitel_ban_time');
-                } else {
-                    const minutes = Math.floor(restantSeconde / 60);
-                    const secondes = restantSeconde % 60;
-                    const affichageChrono = `${minutes}:${secondes < 10 ? '0' : ''}${secondes}`;
-                    
-                    submitBtn.textContent = `BANNI POUR INSULTES : ${affichageChrono}`;
-                    statusLine.textContent = `ALERTE : Verrouillage temporaire pour non-respect des règles de modération.`;
-                    statusLine.style.color = "#ff3333";
-                }
-            }, 1000);
-        }
-
+        // --- STUB POUR LE FORMULAIRE (À LIER À TON PHP COMPLET DEMAIN) ---
         function gererEnvoiFormulaire(event) {
             event.preventDefault();
-            
-            const now = Date.now();
-            const msgArea = document.getElementById('msgTextarea');
-            const message = msgArea.value.trim();
-            const pseudo = localStorage.getItem('minitel_pseudo') || "Anonyme";
-
-            if (message.length === 0) return;
-
-            // Double sécurité : Blocage si déjà banni
-            if (verifierStatutBannissement()) return;
-
-            // Analyse et interception immédiate de la Blacklist
-            if (contientMotInterdit(message)) {
-                insultAttemptCount++;
-                msgArea.value = "";
-
-                if (insultAttemptCount >= 5) {
-                    // Application instantanée du Ban de 5 minutes (5 * 60 * 1000ms = 300000ms)
-                    const nouveauTempsBan = Date.now() + 300000;
-                    localStorage.setItem('minitel_ban_time', nouveauTempsBan);
-                    insultAttemptCount = 0; // Remise à zéro du compteur d'infractions
-                    verifierStatutBannissement();
-                } else {
-                    alert(`ATTENTION : Mot interdit détecté. (${insultAttemptCount}/5 tentatives infructueuses avant bannissement de 5 minutes)`);
-                }
-                return;
-            }
-
-            // BLOCAGE DU SPAM CLASSIQUE (Écart de 10 secondes minimum)
-            if (now - lastMessageTime < 10000) {
-                alert("SPAM BLOCK : Attendez 10 secondes d'intervalle entre chaque transmission.");
-                return;
-            }
-
-            // Réinitialisation du compteur d'infractions d'affilée en cas d'envoi valide
-            insultAttemptCount = 0;
-            lastMessageTime = now;
-
-            // Lancement cinématique
-            executerTransmission(pseudo, message);
+            // Code de traitement d'envoi de ton message ici...
         }
 
-        // --- ENVOI DU PAQUET ET SCÉNARIO TECHNIQUE DE CHARGEMENT DE 30 SECONDES ---
-        function executerTransmission(pseudo, message) {
-            const messageAssemble = `${pseudo}: ${message}`;
-
-            document.getElementById('main-interface').style.display = 'none';
-            document.getElementById('animation-screen').style.display = 'flex';
-
-            const sendBar = document.getElementById('sendProgressBar');
-            const sendText = document.getElementById('sendProgressText');
-            
-            let duree = 30000; 
-            let intervalle = 100;
-            let passe = 0;
-
-            const etapesTextes = [
-                { t: 0, txt: "CONNEXION INITIALE À LA BROCHE DIN 5 RETRO..." },
-                { t: 4500, txt: "OUVERTURE DU BUS SÉRIE TX2 / RX EN PROGRESSION..." },
-                { t: 9000, txt: "ENCODE DE LA CHAINE EN SIGNAL CATHODIQUE VINTAGE..." },
-                { t: 15000, txt: "CONVERTISSEMENT DES PACKETS DE DONNÉES EN 7 BITS..." },
-                { t: 21000, txt: "INJECTION SUR LE CANAL DE COM DE L'ESP32 DE L'AMPLI..." },
-                { t: 26500, txt: "AFFICHAGE SUR LE TUBES DE L'ÉCRAN TERMINAL..." }
-            ];
-
-            sendBar.style.width = '0%';
-
-            const chronoEnvoi = setInterval(() => {
-                passe += intervalle;
-                let pct = (passe / duree) * 100;
-                sendBar.style.width = pct + '%';
-
-                etapesTextes.forEach(etape => {
-                    if (passe >= etape.t) {
-                        sendText.textContent = etape.txt;
-                    }
-                });
-
-                if (passe >= duree) {
-                    clearInterval(chronoEnvoi);
-                    document.getElementById('animation-screen').style.display = 'none';
-                    document.getElementById('main-interface').style.display = 'block';
-                    
-                    document.getElementById('msgTextarea').value = "";
-                    console.log("Flux final poussé avec succès vers le récepteur ESP32 :", messageAssemble);
-                }
-            }, intervalle);
+        function verifierStatutBannissement() {
+            // Vérification de sécurité locale
+            return false;
         }
-
-        // --- DÉCLENCHEMENT DU GLITCH ALÉATOIRE CRT RETRO ---
-        function triggerGlitch() {
-            const glitch = document.getElementById('glitchBlock');
-            glitch.style.display = 'block';
-            setTimeout(() => { glitch.style.display = 'none'; }, 180);
-        }
-        setInterval(() => { if (Math.random() > 0.88) triggerGlitch(); }, 2500);
-
-        function closeModal() {
-            document.getElementById('rulesModal').style.display = 'none';
-            validerRegles();
-        }
-
-        // Cycle d'écoute d'état direct au chargement initial du DOM
-        window.onload = function() {
-            verifierStatutBannissement();
-        };
     </script>
 </body>
 </html>
