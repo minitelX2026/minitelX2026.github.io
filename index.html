@@ -2,81 +2,81 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Minitel X Terminal Extreme</title>
+    <title>Minitel X Terminal</title>
     <style>
-        body { background: #000; color: #00ff33; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
-        .crt-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 1000; }
-        #boot-container, #main-interface { position: fixed; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; background: #000; }
-        .progress-bar { width: 300px; height: 20px; border: 2px solid #00ff33; margin-top: 20px; }
-        #bar-fill { width: 0%; height: 100%; background: #00ff33; }
-        .pixel-art-line { border-bottom: 2px dashed #00ff33; width: 60%; margin: 20px 0; position: relative; }
-        #file-packet { position:absolute; top:-10px; left:0; width:10px; height:10px; background:#fff; }
-        #main-interface { display: none; }
-        input, textarea { background: #000; color: #00ff33; border: 1px solid #00ff33; padding: 10px; width: 250px; }
-        button { background: #00ff33; border: none; padding: 10px; margin-top: 10px; cursor: pointer; font-weight: bold; }
+        body { background: #000; color: #00ff33; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .crt { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(18,16,16,0) 50%, rgba(0,0,0,0.25) 50%), linear-gradient(90deg, rgba(0,255,51,0.06), rgba(0,255,51,0.02)); background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 1000; }
+        
+        #stage { width: 800px; height: 300px; border: 2px solid #00ff33; position: relative; display: flex; align-items: center; justify-content: space-around; padding: 20px; }
+        .art { width: 80px; height: 60px; border: 2px solid #00ff33; display: flex; justify-content: center; align-items: center; position: relative; }
+        
+        #file { width: 10px; height: 10px; background: #00ff33; position: absolute; left: 60px; top: 145px; transition: all 0.1s linear; }
+        .line { position: absolute; top: 150px; left: 80px; right: 80px; height: 2px; border-top: 2px dashed #00ff33; z-index: -1; }
+        
+        #interface, #boot { position: absolute; background: #000; width: 100%; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center; }
+        #interface { display: none; }
+        textarea, input { width: 200px; background: #000; border: 1px solid #00ff33; color: #00ff33; padding: 10px; margin: 5px; }
+        button { background: #00ff33; color: #000; border: none; padding: 10px 20px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
-    <div class="crt-overlay"></div>
+    <div class="crt"></div>
 
-    <div id="boot-container">
-        <h1>MINITEL X SYSTEM BOOT</h1>
-        <div class="pixel-art-line"><div id="file-packet"></div></div>
-        <div class="progress-bar"><div id="bar-fill"></div></div>
-        <p id="status-text">INITIALISATION EN COURS...</p>
+    <div id="boot">
+        <div id="stage">
+            <div class="art">PC</div>
+            <div class="line"></div>
+            <div class="art">ESP</div>
+            <div class="art">MINITEL</div>
+            <div id="file"></div>
+        </div>
+        <div id="progress" style="width: 300px; height: 20px; border: 1px solid #00ff33; margin-top: 20px;">
+            <div id="fill" style="width: 0%; height: 100%; background: #00ff33;"></div>
+        </div>
+        <p id="txt">INITIALISATION...</p>
     </div>
 
-    <div id="main-interface">
-        <h2>COMMUNICATION ESP32</h2>
-        <input type="text" id="pseudo-input" placeholder="TON PSEUDO (MAX 15)" maxlength="15">
-        <textarea id="msg-input" placeholder="MESSAGE (MAX 25)" maxlength="25"></textarea>
-        <button onclick="envoyerMessage()">ENVOYER LE MESSAGE</button>
+    <div id="interface">
+        <h2>COMMUNICATION VIA ESP32</h2>
+        <input id="p" placeholder="PSEUDO (1-15)" maxlength="15">
+        <textarea id="m" placeholder="MESSAGE (1-25)" maxlength="25"></textarea>
+        <button onclick="send()">ENVOYER</button>
     </div>
 
     <script>
-        const status = ["Chargement des données ESP32", "Verification tube cathodique", "Exploitation fichier...", "Connexion Minitel établie"];
-        let progress = 0;
-        const bar = document.getElementById('bar-fill');
-        const file = document.getElementById('file-packet');
-        const txt = document.getElementById('status-text');
-
-        let interval = setInterval(() => {
-            progress += 1;
-            bar.style.width = progress + "%";
-            file.style.left = progress + "%";
-            if (progress % 25 === 0) txt.innerText = status[progress/25 - 1];
+        const status = ["CHARGEMENT ESP32", "CONNEXION TUBE", "ENVOI DONNEES"];
+        let p = 0;
+        const f = document.getElementById('file');
+        
+        let loop = setInterval(() => {
+            p++;
+            document.getElementById('fill').style.width = p + "%";
+            f.style.left = (60 + (p * 6.5)) + "px";
+            if (p % 33 === 0) document.getElementById('txt').innerText = status[p/33 - 1];
             
-            // Effet glitch aléatoire
-            if(Math.random() > 0.9) document.body.style.filter = "invert(1)";
-            else document.body.style.filter = "none";
+            // Glitch CRT
+            if(Math.random() > 0.95) document.body.style.transform = "translateX(5px)";
+            else document.body.style.transform = "translateX(0px)";
 
-            if (progress >= 100) {
-                clearInterval(interval);
-                document.getElementById('boot-container').style.display = 'none';
-                document.getElementById('main-interface').style.display = 'flex';
+            if (p >= 100) {
+                clearInterval(loop);
+                document.getElementById('boot').style.display = 'none';
+                document.getElementById('interface').style.display = 'flex';
             }
         }, 100);
 
-        async function envoyerMessage() {
-            const msg = document.getElementById('msg-input').value;
-            const pseudo = document.getElementById('pseudo-input').value || "Tom";
-            const blacklist = ["insulte1", "insulte2"]; // Ajoute tes mots ici
+        async function send() {
+            const m = document.getElementById('m').value;
+            const p = document.getElementById('p').value;
+            const bad = ["con", "merde", "pute"]; 
+            if(bad.some(w => m.toLowerCase().includes(w))) return alert("INSULTE DETECTEE");
             
-            if(blacklist.some(v => msg.toLowerCase().includes(v))) {
-                alert("Message interdit !");
-                return;
-            }
-
-            if(msg.length > 0 && msg.length <= 25) {
-                await fetch('https://ntfy.sh/minitel-tom-2026', {
-                    method: 'POST',
-                    body: pseudo + " " + msg
-                });
-                alert("Message envoyé avec succès.");
-                document.getElementById('msg-input').value = "";
-            } else {
-                alert("Erreur : Pseudo ou message invalide.");
-            }
+            await fetch('https://ntfy.sh/minitel-tom-2026', {
+                method: 'POST',
+                body: p + " " + m
+            });
+            alert("MESSAGE TRANSMIS");
+            document.getElementById('m').value = "";
         }
     </script>
 </body>
