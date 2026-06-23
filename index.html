@@ -58,17 +58,24 @@
             if(val) { localStorage.setItem('minitelPseudo', val); next('terminal'); }
         }
 
+        // --- RETOUR À LA VERSION QUI FONCTIONNE ---
         async function send() {
-            const m = document.getElementById('m-input').value;
+            const m_input = document.getElementById('m-input').value;
             const lastSend = localStorage.getItem('lastSend') || 0;
             const now = Date.now();
             
             if (now - lastSend < 10000) return alert("Attendez 10s avant de renvoyer.");
 
-            const bad = ["con", "merde", "pute", "encule", "connard", "salope", "batard", "fdp", "tg"];
-            if(bad.some(w => m.toLowerCase().includes(w))) return alert("Insultes détectées, veuillez changer de mots.");
+            // Nettoyage simple qui fonctionnait
+            const m = m_input.toUpperCase();
+
+            // Blacklist
+            const bad = ["CON", "MERDE", "PUTE", "ENCULE", "CONNARD", "SALOPE", "BATARD", "FDP", "TG"];
+            if(bad.some(w => m.split(' ').includes(w))) return alert("Insultes détectées, veuillez changer de mots.");
 
             const p = localStorage.getItem('minitelPseudo');
+            
+            // Envoi de base, sans en-tête complexe
             await fetch('https://ntfy.sh/minitel-tom-2026', { method: 'POST', body: p + " " + m });
             
             localStorage.setItem('lastSend', now);
