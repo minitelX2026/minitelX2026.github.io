@@ -942,36 +942,34 @@
             btn.addEventListener('click', envoyerAuMinitel);
         }
   <script>
+    // --- FONCTION D'ENVOI AU MINITEL ---
     async function envoyerAuMinitel() {
         const messageBox = document.querySelector('textarea');
-        const message = messageBox.value;
+        const pseudoInput = document.querySelector('.pseudo-input-field'); // Ton champ pseudo
         
-        // On récupère le pseudo (celui que l'utilisateur a entré dans ta modal)
-        const pseudoField = document.querySelector('.pseudo-input-field');
-        const pseudo = pseudoField ? pseudoField.value : "Tom";
+        const message = messageBox ? messageBox.value : "";
+        const pseudo = pseudoInput ? pseudoInput.value : "Tom";
         
-        // On nettoie le message pour éviter les codes graphiques (le Pikachu, ce sera pour plus tard !)
-        // On remplace les caractères spéciaux par des espaces pour garder ton écran propre
-        let messagePropre = message.replace(/[^a-zA-Z0-9 ]/g, " ");
+        // Nettoyage pour le Minitel (enlève accents et caractères spéciaux qui plantent l'affichage)
+        const messagePropre = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, " ");
         
-        const texteComplet = pseudo + " : " + messagePropre;
-        
-        if (message.trim() !== "") {
+        if (messagePropre.trim() !== "") {
+            const texteComplet = pseudo + " : " + messagePropre;
+            
             try {
-                // Ici, le site envoie le message directement au canal écouté par ton ESP32
+                // Envoi direct vers ton canal
                 await fetch('https://ntfy.sh/minitel-tom-2026', {
                     method: 'POST',
                     body: texteComplet
                 });
-                
-                messageBox.value = ""; // Vide la zone de texte après envoi
+                if (messageBox) messageBox.value = ""; // Vide la zone de texte
             } catch (error) {
-                console.error("Erreur de connexion avec ntfy :", error);
+                console.error("Erreur de transmission :", error);
             }
         }
     }
 
-    // Branchement sur ton bouton existant
+    // Branchement automatique sur ton bouton d'envoi existant
     const btn = document.getElementById('submitBtn');
     if (btn) {
         btn.addEventListener('click', envoyerAuMinitel);
