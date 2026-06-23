@@ -60,6 +60,36 @@
             }, 100);
         }
         boot();
-    </script>
+  <!-- INTERFACE DE COMMUNICATION (À ajouter après le boot-container) -->
+<div id="main-interface" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid #00ff33; padding: 20px; background: #040608; width: 300px; text-align: center;">
+    <h2 style="font-size: 16px;">COMMUNICATION VIA ESP32 À MINITEL</h2>
+    <textarea id="msg-input" maxlength="25" placeholder="Message (max 25 car)..." style="width: 100%; height: 50px; background: #000; color: #00ff33; border: 1px solid #00ff33; margin-top: 10px;"></textarea>
+    <button onclick="envoyerMessage()" style="width: 100%; margin-top: 10px; padding: 10px; background: #00ff33; border: none; cursor: pointer;">ENVOYER LE MESSAGE</button>
+</div>
+
+<script>
+    // Ajoute ceci dans ton script existant pour afficher l'interface après le chargement
+    // Modifie la ligne dans ton "boot" où il y avait : document.getElementById('boot-container').style.display = 'none';
+    // Et remplace-la par : 
+    // document.getElementById('boot-container').style.display = 'none';
+    // document.getElementById('main-interface').style.display = 'block';
+
+    async function envoyerMessage() {
+        const msg = document.getElementById('msg-input').value;
+        const pseudo = localStorage.getItem('minitelPseudo') || "Tom";
+        
+        // Ici on fera la blacklist plus tard
+        if(msg.length > 0 && msg.length <= 25) {
+            await fetch('https://ntfy.sh/minitel-tom-2026', {
+                method: 'POST',
+                body: pseudo + " " + msg
+            });
+            alert("Message envoyé !");
+            document.getElementById('msg-input').value = "";
+        } else {
+            alert("Erreur : message trop long ou vide !");
+        }
+    }
+</script>
 </body>
 </html>
