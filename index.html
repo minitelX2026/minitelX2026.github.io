@@ -942,5 +942,35 @@
             btn.addEventListener('click', envoyerAuMinitel);
         }
     </script>
+<script>
+    async function envoyerAuMinitel() {
+        const messageBox = document.querySelector('textarea');
+        const message = messageBox.value;
+        
+        // On récupère le pseudo dans le champ qui est dans ta modal (j'ai visé la classe pseudo-input-field)
+        const pseudoField = document.querySelector('.pseudo-input-field');
+        const pseudo = pseudoField ? pseudoField.value : "Tom";
+        
+        if (message.trim() !== "") {
+            const texteComplet = pseudo + " : " + message;
+            
+            try {
+                await fetch('https://ntfy.sh/minitel-tom-2026', {
+                    method: 'POST',
+                    body: texteComplet
+                });
+                messageBox.value = ""; 
+            } catch (error) {
+                console.error("Erreur :", error);
+            }
+        }
+    }
+
+    // On lie le bouton qui est dans ton code original
+    const btn = document.getElementById('submitBtn');
+    if (btn) {
+        btn.addEventListener('click', envoyerAuMinitel);
+    }
+</script>
 </body>
 </html>
