@@ -900,5 +900,24 @@
             // fetch(`http://IP_DE_TON_ESP32/send?pseudo=${encodeURIComponent(pseudo)}&text=${encodeURIComponent(message)}`);
         }
     </script>
+<script>
+    document.getElementById('submitBtn').addEventListener('click', function() {
+        // Récupère ton pseudo et ton message
+        let pseudo = document.getElementById('pseudoInput') ? document.getElementById('pseudoInput').value : "TOM";
+        let commentaire = document.getElementById('messageArea').value;
+        let messageFinal = pseudo + ":" + commentaire;
+
+        // Envoi sécurisé vers ton serveur ntfy
+        fetch('https://ntfy.sh/minitel-tom-2026', {
+            method: 'POST',
+            body: messageFinal
+        }).then(response => {
+            if(response.ok) {
+                console.log("Message envoyé !");
+                document.getElementById('messageArea').value = ''; // Vide la zone de texte
+            }
+        }).catch(err => console.error("Erreur d'envoi :", err));
+    });
+</script>
 </body>
-</html>
+
