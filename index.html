@@ -343,637 +343,95 @@
             transition: background-color 0.2s;
         }
         
-        #submitBtn:disabled { 
-            background-color: #221414 !important; 
-            color: #ff3333 !important; 
-            border: 1px solid #660000; 
-            cursor: not-allowed; 
-            box-shadow: 0 0 8px rgba(255, 51, 51, 0.15); 
+        #submitBtn:hover { 
+            background-color: #00cc2a; 
+            box-shadow: 0 0 15px #00ff33; 
         }
 
-        /* --- ÉCRAN DE BOOT INITIAL DE 60 SECONDES --- */
-        #boot-screen {
+        /* --- ÉCRAN DE DÉMARRAGE (BOOT) --- */
+        #boot-screen { 
             position: fixed; 
             top: 0; 
             left: 0; 
             width: 100vw; 
-            height: 100vh;
-            background-color: #040608; 
-            z-index: 10005;
+            height: 100vh; 
+            background: #040608; 
+            z-index: 20000; 
             display: flex; 
             flex-direction: column; 
             justify-content: center; 
-            align-items: center;
-        }
-        
-        .boot-scene { 
-            position: relative; 
-            width: 390px; 
-            height: 150px; 
-            display: flex; 
-            justify-content: space-between; 
             align-items: center; 
-            padding: 0 10px; 
-        }
-        
-        .boot-line { 
-            position: absolute; 
-            top: 50%; 
-            left: 45px; 
-            width: 300px; 
-            height: 2px; 
-            border-top: 2px dashed rgba(0, 255, 51, 0.35); 
-            z-index: 1; 
-            transform: translateY(-50%); 
-        }
-        
-        .boot-folder {
-            position: absolute; 
-            width: 24px; 
-            height: 24px; 
-            fill: #00ff33; 
-            top: 50%; 
-            left: 35px;
-            transform: translateY(-50%);
-            animation: boot-flow 3s infinite linear; 
-            z-index: 2; 
-            filter: drop-shadow(0 0 7px #00ff33);
-        }
-        
-        @keyframes boot-flow { 
-            0% { left: 35px; } 
-            100% { left: 330px; } 
-        }
-
-        /* STRUCTURE RECRÉÉE ESP32 COMPLÈTE */
-        .esp32-detailed {
-            position: absolute; 
-            top: 50%; 
-            left: 50%; 
-            transform: translate(-50%, -50%);
-            width: 58px; 
-            height: 78px; 
-            background: #121820; 
-            border: 2px solid #00ff33;
-            border-radius: 4px; 
-            z-index: 3; 
-            box-shadow: 0 0 18px rgba(0, 255, 51, 0.45);
-        }
-        
-        .esp32-antenna { 
-            position: absolute; 
-            top: 3px; 
-            left: 5px; 
-            width: 44px; 
-            height: 13px; 
-            border: 2px solid #00ff33; 
-            border-bottom: none; 
-            background: repeating-linear-gradient(90deg, #00ff33, #00ff33 2px, transparent 2px, transparent 6px); 
-            opacity: 0.85; 
-        }
-        
-        .esp32-chip { 
-            position: absolute; 
-            top: 24px; 
-            left: 10px; 
-            width: 34px; 
-            height: 30px; 
-            border: 1px solid #00ff33; 
-            background: #040608; 
-            font-size: 5pt; 
-            display: flex; 
-            justify-content: center; 
-            align-items: center; 
-            font-weight: bold; 
-            text-align: center; 
             color: #00ff33; 
         }
-        
-        .esp32-detailed::before { 
-            content: ""; 
-            position: absolute; 
-            top: 18px; 
-            left: -4px; 
-            height: 52px; 
-            width: 2px; 
-            background: repeating-linear-gradient(0deg, #00ff33, #00ff33 3px, transparent 3px, transparent 6px); 
-        }
-        
-        .esp32-detailed::after { 
-            content: ""; 
-            position: absolute; 
-            top: 18px; 
-            right: -4px; 
-            height: 52px; 
-            width: 2px; 
-            background: repeating-linear-gradient(0deg, #00ff33, #00ff33 3px, transparent 3px, transparent 6px); 
-        }
-
-        /* CONTRÔLEURS DE LA JAUGE DE DÉMARRAGE */
-        .boot-progress-container { 
-            width: 300px; 
-            height: 14px; 
-            border: 1px solid #00ff33; 
-            margin-top: 25px; 
-            padding: 2px; 
-            border-radius: 3px; 
-            background: #040608; 
-        }
-        
-        .boot-progress-bar { 
-            height: 100%; 
-            background-color: #00ff33; 
-            width: 0%; 
-            animation: load-sixty 60s linear forwards; 
-            box-shadow: 0 0 9px #00ff33; 
-        }
-        
-        @keyframes load-sixty { to { width: 100%; } }
-        
-        .boot-progress-container.unstable { border-color: #ff3333 !important; }
-        .boot-progress-bar.unstable { background-color: #ff3333 !important; box-shadow: 0 0 12px #ff3333 !important; }
-        .loading-text { margin-top: 18px; font-size: 10pt; width: 340px; text-align: center; letter-spacing: 1px; z-index: 5; line-height: 1.5; }
-        .loading-text.unstable-text { color: #ff3333 !important; animation: blink-alert 0.4s infinite alternate; }
-        
-        @keyframes blink-alert { from { opacity: 1; } to { opacity: 0.3; } }
-
-        /* --- ÉCRAN D'ANIMATION DE TRANSMISSION EN 30 SECONDES --- */
-        #animation-screen {
-            display: none; 
-            position: fixed; 
-            top: 0; 
-            left: 0; 
-            width: 100vw; 
-            height: 100vh;
-            background-color: #040608; 
-            z-index: 9999;
-            flex-direction: column; 
-            justify-content: center; 
-            align-items: center;
-        }
-        
-        .scene { position: relative; width: 340px; height: 210px; }
-        
-        .road-arc { 
-            position: absolute; 
-            top: 55px; 
-            left: 40px; 
-            width: 260px; 
-            height: 260px; 
-            border: 3px dashed #00ff33; 
-            border-radius: 50%; 
-            clip-path: inset(0 0 50% 0); 
-            filter: drop-shadow(0 0 5px #00ff33); 
-        }
-        
-        .moving-folder { 
-            position: absolute; 
-            width: 30px; 
-            height: 30px; 
-            fill: #00ff33; 
-            offset-path: path('M 40 185 A 130 130 0 0 1 300 185'); 
-            animation: electric-travel 3s infinite linear; 
-            filter: drop-shadow(0 0 10px #00ff33); 
-        }
-        
-        @keyframes electric-travel {
-            0% { offset-distance: 0%; } 
-            12% { offset-distance: 25%; } 
-            15% { offset-distance: 20%; } 
-            25% { offset-distance: 20%; }
-            38% { offset-distance: 55%; } 
-            42% { offset-distance: 50%; } 
-            55% { offset-distance: 50%; } 
-            70% { offset-distance: 85%; }
-            75% { offset-distance: 80%; } 
-            88% { offset-distance: 80%; } 
-            100% { offset-distance: 100%; }
-        }
-        
-        .hardware-icon { position: absolute; bottom: 5px; fill: none; stroke: #00ff33; stroke-width: 1.5; filter: drop-shadow(0 0 6px #00ff33); z-index: 4; }
-        .icon-left { left: 5px; } 
-        .icon-right { right: 5px; }
-
-        .minitel-screen-lines { 
-            position: absolute; 
-            top: 10px; 
-            left: 9px; 
-            width: 24px; 
-            height: 16px; 
-            display: flex; 
-            flex-direction: column; 
-            gap: 2px; 
-            overflow: hidden; 
-        }
-        
-        .line-white { 
-            width: 0%; 
-            height: 2px; 
-            background-color: #ffffff; 
-            box-shadow: 0 0 2px #ffffff; 
-            animation: write-line-thirty 30s linear forwards; 
-        }
-        
-        .line-white:nth-child(2) { animation-delay: 6s; } 
-        .line-white:nth-child(3) { animation-delay: 13s; } 
-        .line-white:nth-child(4) { animation-delay: 21s; }
-        
-        @keyframes write-line-thirty { to { width: 100%; } }
-
-        .progress-container { width: 280px; height: 12px; border: 1px solid #00ff33; margin-top: 35px; padding: 2px; border-radius: 3px; z-index: 5; }
-        .progress-bar { height: 100%; background-color: #00ff33; width: 0%; box-shadow: 0 0 9px #00ff33; }
     </style>
 </head>
 <body>
 
-    <div id="live-counter" style="
-        position: fixed;
-        top: 20px;
-        right: 20px;
-        background-color: rgba(12, 17, 26, 0.85);
-        color: #00ff33;
-        padding: 10px 15px;
-        border: 2px solid #00ff33;
-        font-family: 'Courier New', monospace;
-        font-size: 14px;
-        font-weight: bold;
-        border-radius: 5px;
-        z-index: 99999;
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        box-shadow: 0 0 15px rgba(0, 255, 51, 0.2);
-    ">
-        <span>👤</span> 
-        <span id="user-count">1</span> en ligne
-    </div>
-
-    <div class="code-rain-bg" id="codeRain"></div>
-    <div class="glitch-overlay" id="glitchBlock"></div>
-
     <div id="boot-screen">
-        <div class="boot-scene">
-            <div class="boot-line"></div>
-            <svg class="boot-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
-            <div class="esp32-detailed">
-                <div class="esp32-antenna"></div>
-                <div class="esp32-chip">ESP32<br>WROOM</div>
-            </div>
-            <div style="position: relative; width: 45px; height: 45px;">
-                <svg width="45" height="45" fill="none" stroke="#00ff33" stroke-width="1.5" style="filter:drop-shadow(0 0 5px #00ff33);"><path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/></svg>
-            </div>
-        </div>
-        <div class="boot-progress-container" id="bootProgressCont"><div class="boot-progress-bar" id="bootProgressBar"></div></div>
-        <div class="loading-text" id="bootStatusText">INITIALISATION DU SYSTEME...<br>RECHERCHE DU MODULE MATÉRIEL ESP32</div>
+        <div style="font-size: 24pt; margin-bottom: 20px;">MINITEL 9 SYSTEM</div>
+        <div id="boot-status">INITIALISATION MATÉRIELLE...</div>
     </div>
-
-    <div class="modal-overlay" id="rulesModal">
-        <div class="modal-box">
-            <div class="close-btn" id="modalCloseX" onclick="closeModal()">×</div>
-            <div class="modal-title">[ PROTOCOLE DE SÉCURITÉ ]</div>
-            <div class="modal-text">
-                Ce site internet d'intégration a été conçu exclusivement pour envoyer des messages modernes depuis un terminal Minitel historique.<br><br>
-                Veuillez ne pas spammer le flux et respecter le matériel. Aucun mot vulgaire ou insulte ne sera toléré par la passerelle réseau.<br><br>
-                Le terminal est actif uniquement lors des diffusions en direct sur la chaîne YOUTUBE <span class="channel-highlight">team-banane_9ytb</span>, en live à peu près tous les jours.
-            </div>
-            <div class="modal-checkbox-zone">
-                <input type="checkbox" id="acceptCheck" onclick="toggleModalButtons()">
-                <label for="acceptCheck">J'ai lu, compris et j'accepte le règlement.</label>
-            </div>
-            <button class="modal-action-btn" id="modalActionBtn" onclick="validerRegles()">ACCEPTER ET CONTINUER</button>
-        </div>
-    </div>
-
-    <div class="modal-overlay" id="pseudoModal">
-        <div class="modal-box">
-            <div class="modal-title">[ CONFIGURATION DU COMPTE ]</div>
-            <div class="modal-text" style="text-align: center;">
-                Veuillez choisir un pseudonyme afin d'identifier vos paquets de données sur l'écran du Minitel.
-            </div>
-            <input type="text" id="pseudoInput" class="pseudo-input-field" placeholder="PSEUDO (3 À 12 CAR.)" maxlength="12">
-            <div class="error-msg" id="pseudoError"></div>
-            <button class="modal-action-btn" id="pseudoActionBtn" onclick="validerPseudo()">ENREGISTRER LE PSEUDO</button>
-        </div>
-    </div>
-
-    <svg class="floating-bg-icon" id="bg-icon-ps" viewBox="0 0 40 26">
-        <path d="M 6,2 H 34 A 4,4 0 0 1 38,6 V 16 A 6,6 0 0 1 32,22 L 28,18 H 12 L 8,22 A 6,6 0 0 1 2,16 V 6 A 4,4 0 0 1 6,2 Z"/>
-        <path d="M 7,11 H 11 V 7 H 13 V 11 H 17 V 13 H 13 V 17 H 11 V 13 H 7 Z" fill="#00ff33"/>
-        <rect x="29" y="8" width="3" height="3" fill="#00ff33"/><rect x="25" y="12" width="3" height="3" fill="#00ff33"/>
-        <rect x="33" y="12" width="3" height="3" fill="#00ff33"/><rect x="29" y="16" width="3" height="3" fill="#00ff33"/>
-    </svg>
-    
-    <svg class="floating-bg-icon" id="bg-icon-ps1" viewBox="0 0 40 40">
-        <path d="M4,8 H36 V32 H4 Z M4,8 L6,6 H34 L36,8 M4,32 L6,34 H34 L36,32"/>
-        <path d="M12,20 A 8,8 0 1,0 28,20 A 8,8 0 1,0 12,20 Z"/>
-        <text x="14" y="22" font-family="monospace" font-size="5px" font-weight="bold" fill="none" stroke="#00ff33" stroke-width="0.5">PS1</text>
-    </svg>
-    
-    <svg class="floating-bg-icon" id="bg-icon-mini" viewBox="0 0 45 45">
-        <path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z"/>
-    </svg>
-    
-    <svg class="floating-bg-icon" id="bg-icon-phone" viewBox="0 0 40 40">
-        <path d="M10,20 H30 L34,34 H6 Z M16,16 H24 V20 H16 Z"/>
-    </svg>
-    
-    <svg class="floating-bg-icon" id="bg-icon-pc" viewBox="0 0 32 32">
-        <path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M2,26 H30 V28 H2 Z"/>
-    </svg>
 
     <div class="terminal-container" id="main-interface">
-        <div class="account-header">ID COMPTE : <span id="affichagePseudo">---</span></div>
-        
+        <div class="account-header" id="affichagePseudo"></div>
         <div class="terminal">
-            <h1>[ MINITEL X SYSTEM ]</h1>
-            <div class="status" id="systemStatusLine">Statut : En ligne | Liaison ESP32 active</div>
-            
-            <form id="msgForm" onsubmit="gererEnvoiFormulaire(event)">
-                <textarea name="msg" id="msgTextarea" placeholder="Écrivez votre message à transmettre au serveur Minitel..." required></textarea>
-                <button type="submit" id="submitBtn">TRANSMETTRE LE MESSAGE</button>
+            <h1>ENTRÉE DONNÉES</h1>
+            <div class="status">CONNEXION ESP32 ACTIVE</div>
+            <form onsubmit="gererEnvoiFormulaire(event)">
+                <textarea id="msgTextarea" placeholder="Écrire le commentaire ici..." maxlength="100"></textarea>
+                <button type="submit" id="submitBtn">Transmettre</button>
             </form>
         </div>
     </div>
 
-    <div id="animation-screen">
-        <div class="scene">
-            <div class="road-arc"></div>
-            <svg class="moving-folder" viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg>
-            <svg class="hardware-icon icon-left" width="45" height="45" viewBox="0 0 32 32"><path d="M4,4 H28 V20 H4 Z M6,6 H26 V18 H6 Z M12,21 H20 V25 H12 Z M2,26 H30 V28 H2 Z"/></svg>
-
-            <div class="hardware-icon icon-right" style="position: absolute; right: 5px; width: 45px; height: 45px;">
-                <svg width="45" height="45" viewBox="0 0 45 45" fill="none" stroke="#00ff33" stroke-width="1.5">
-                    <path d="M5,5 H40 V32 H5 Z M2,32 H43 V38 H2 Z M6,39 H39 V42 H6 Z M8,2 H37 V4 H8 Z M12,0 H32 V1 H12 Z M8,8 H34 V26 H8 Z" fill="#040608"/>
-                </svg>
-                <div class="minitel-screen-lines">
-                    <div class="line-white"></div><div class="line-white"></div><div class="line-white"></div><div class="line-white"></div>
-                </div>
-            </div>
-        </div>
-        <div class="progress-container"><div class="progress-bar" id="sendProgressBar"></div></div>
-        <div class="loading-text" id="sendProgressText">INJECTEUR DE CODE INITIALISÉ...</div>
-    </div>
-
     <script>
-        // --- LA BASE DE LA BLACKLIST SÉCURISÉE ---
-        const blacklist = [
-            "merde", "connard", "connarde", "conard", "con", "conne", "salaud", "salope", "enfoire", "enfoiree",
-            "batard", "batarde", "crevard", "crevarde", "pouffiasse", "poufiasse", "chieur", "chieuse",
-            "filsdepute", "filsdeup", "fdp", "putain", "pute", "petasse", "biatch", "bordel", "garce",
-            "couille", "couilles", "bite", "bites", "chatte", "chattes", "cul", "trousduc", "trouducul",
-            "zeub", "zoub", "teub", "teube", "chneck", "beauf",
-            "branleur", "branleuse", "branlette", "fouteur", "encule", "enculee", "nique", "niquer", 
-            "niquemouk", "baise", "baiser", "suceur", "suceuse", "tocard", "tocarde", "fouillemerde",
-            "tg", "ntm", "pd"
-        ];
-
-        let lastMessageTime = 0;
-        let insultAttemptCount = 0;
-
-        function contientMotInterdit(texte) {
-            const texteMinuscule = texte.toLowerCase();
-            return blacklist.some(mot => texteMinuscule.includes(mot));
-        }
-
-        // --- GÉNÉRATEUR DE PLUIE DE MATRICE DE SYMBOLES ---
-        const bgContainer = document.getElementById('codeRain');
-        const columnsCount = Math.floor(window.innerWidth / 35);
-        const codePhrases = [
-            "ESP32_BOOT", "BAUD_4800", "CONNECT_FAIL", "SYS_RETRY", "DIN_5_PIN", 
-            "NET_BUSY", "DATA_STREAM", "M_ZNF330", "STATUS_200", "0110", "TX2_READY", 
-            "RX_ACTIVE", "CRTL_CRT", "RAM_OK", "VRAM_OVER", "MINITEL_LIVE"
-        ];
-        
-        for (let i = 0; i < columnsCount; i++) {
-            let col = document.createElement('div');
-            col.className = "code-column";
-            col.style.animationDuration = `${Math.random() * 5 + 6}s`;
-            col.style.animationDelay = `${Math.random() * 5}s`;
-            let textBlock = "";
-            for (let j = 0; j < 15; j++) {
-                textBlock += codePhrases[Math.floor(Math.random() * codePhrases.length)] + "<br>";
-            }
-            col.innerHTML = textBlock;
-            bgContainer.appendChild(col);
-        }
-
-        // --- SÉQUENCEUR CHRONOLOGIQUE DU DÉMARRAGE DE 60 SECONDES ---
-        const pCont = document.getElementById('bootProgressCont');
-        const pBar = document.getElementById('bootProgressBar');
-        const statusText = document.getElementById('bootStatusText');
-
-        setTimeout(() => { statusText.innerHTML = "CHARGEMENT DE LA PILE PROTOCOLAIRE M_ZNF330...<br>RECHERCHE DU CANAL DE COM"; }, 10000);
-        setTimeout(() => { statusText.innerHTML = "SYNCHRONISATION INTERNE À 4800 BAUD...<br>STABILISATION DE LA TENSION DU TERMINAL"; }, 22000);
-        setTimeout(() => { statusText.innerHTML = "OUVERTURE DU PORT DE SÉCURITÉ EN COURS...<br>VÉRIFICATION DE L'INTEGRITÉ DU SERVEUR YOUTUBE"; }, 34000);
-
-        setTimeout(() => {
-            pCont.classList.add('unstable');
-            pBar.classList.add('unstable');
-            statusText.classList.add('unstable-text');
-            statusText.innerHTML = "[ALERTE: DÉSÉQUILIBRE DU FLUX DE DONNÉES DETECTÉ...]<br>TENTATIVE CRITIQUE DE RECONNEXION AU BUS MATÉRIEL";
-        }, 44000);
-
-        setTimeout(() => {
-            pCont.classList.remove('unstable');
-            pBar.classList.remove('unstable');
-            statusText.classList.remove('unstable-text');
-            statusText.innerHTML = "SIGNAL RETRO ENTIÈREMENT RESTAURÉ ET SÉCURISÉ...<br>FINALISATION DU BOOT DE L'ESP32 DANS L'AMPLI";
-        }, 53000);
-
-        // --- ENTRÉE SUR L'INTERFACE APPRÈS LE BOOT ---
-        setTimeout(() => {
-            document.getElementById('boot-screen').style.display = 'none';
-            const pseudoSauvegarde = localStorage.getItem('minitel_pseudo');
+        // --- LOGIQUE DE DÉMARRAGE CORRIGÉE ---
+        window.onload = () => {
+            const status = document.getElementById('boot-status');
             
-            if (pseudoSauvegarde) {
-                document.getElementById('affichagePseudo').textContent = pseudoSauvegarde;
-                document.getElementById('rulesModal').style.display = 'flex';
-            } else {
-                document.getElementById('pseudoModal').style.display = 'flex';
-            }
-        }, 60000); // 60 secondes de chargement pur style rétro !
-
-        // --- VALIDATION DU PSEUDO ---
-        function validerPseudo() {
-            const input = document.getElementById('pseudoInput');
-            const erreur = document.getElementById('pseudoError');
-            const pseudo = input.value.trim();
-
-            if (pseudo.length < 3 || pseudo.length > 12) {
-                erreur.textContent = "LE PSEUDO DOIT FAIRE ENTRE 3 ET 12 CARACTÈRES !";
-                return;
-            }
-            if (contientMotInterdit(pseudo)) {
-                erreur.textContent = "PSEUDO INTERDIT PAR LE SYSTÈME DE VÉRIFICATION.";
-                return;
-            }
-
-            localStorage.setItem('minitel_pseudo', pseudo);
-            document.getElementById('affichagePseudo').textContent = pseudo;
-            document.getElementById('pseudoModal').style.display = 'none';
-            document.getElementById('rulesModal').style.display = 'flex';
-        }
-
-        // --- GESTION DES RÈGLES ---
-        function toggleModalButtons() {
-            const checkBox = document.getElementById('acceptCheck');
-            const actionBtn = document.getElementById('modalActionBtn');
-            if (checkBox.checked) {
-                actionBtn.classList.add('active');
-            } else {
-                actionBtn.classList.remove('active');
-            }
-        }
-
-        function validerRegles() {
-            document.getElementById('rulesModal').style.display = 'none';
-            document.getElementById('main-interface').style.display = 'block';
-        }
-
-        // --- TRANSMISSION DU MESSAGE ET ANIMATION DE 30 SECONDES ---
-        function gererEnvoiFormulaire(event) {
-            event.preventDefault();
+            // Séquence de démarrage
+            setTimeout(() => status.textContent = "CHARGEMENT DES PILOTES...", 1500);
+            setTimeout(() => status.textContent = "SYNCHRONISATION ESP32...", 3000);
             
-            const textarea = document.getElementById('msgTextarea');
-            const message = textarea.value.trim();
-            const boutonEnvoi = document.getElementById('submitBtn');
-            const pseudo = localStorage.getItem('minitel_pseudo') || "Anonyme";
-
-            if (!message) return;
-
-            // Sécurité anti-insultes
-            if (contientMotInterdit(message)) {
-                alert("Votre message contient un mot banni. Restez poli !");
-                textarea.value = "";
-                return;
-            }
-
-            // Bloquer le bouton pendant le chargement
-            boutonEnvoi.disabled = true;
-
-            // Masquer l'interface et lancer le mode transmission (30 secondes)
-            document.getElementById('main-interface').style.display = 'none';
-            const animScreen = document.getElementById('animation-screen');
-            animScreen.style.display = 'flex';
-
-            const sendBar = document.getElementById('sendProgressBar');
-            const sendText = document.getElementById('sendProgressText');
-            
-            // Animation de la barre de progression customisée en JS
-            let progression = 0;
-            sendBar.style.width = "0%";
-            
-            const textesEtapes = [
-                "INJECTEUR DE CODE INITIALISÉ...",
-                "CONVERSION EN PROTOCOLE VIDEOTEX COMPATIBLE...",
-                "EMPAQUETAGE DES DONNÉES SÉRIALISÉES (TX2)...",
-                "PASSAGE PAR LA PASSERELLE ESP32 INTERNE...",
-                "TRANSMISSION EN COURS À 4800 BAUD...",
-                "ÉCRITURE SUR L'ÉCRAN CATHODIQUE DU MINITEL..."
-            ];
-
-            const intervalTexte = setInterval(() => {
-                const phraseAleatoire = textesEtapes[Math.floor(Math.random() * textesEtapes.length)];
-                sendText.textContent = phraseAleatoire;
-            }, 5000);
-
-            const intervalBarre = setInterval(() => {
-                progression += 1;
-                sendBar.style.width = progression + "%";
-
-                if (progression >= 100) {
-                    clearInterval(intervalBarre);
-                    clearInterval(intervalTexte);
-                    
-                    // Fin de la transmission de 30 secondes
-                    animScreen.style.display = 'none';
-                    document.getElementById('main-interface').style.display = 'block';
-                    boutonEnvoi.disabled = false;
-                    textarea.value = ""; // Vider le champ de saisie
-                    
-                    alert("Message transmis avec succès au Minitel !");
-                }
-            }, 300); // 100 * 300ms = 30000ms soit pile 30 secondes !
-            
-            // --- ICI TU POURRAS PLACER TON FETCH POUR TON SCRIPT ESP32 ---
-            // fetch(`http://IP_DE_TON_ESP32/send?pseudo=${encodeURIComponent(pseudo)}&text=${encodeURIComponent(message)}`);
-        }
-   <!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Minitel X Terminal Extreme Edition</title>
-    <style>
-        /* (Ton code CSS reste identique, je le garde ici pour que ton fichier soit complet) */
-        /* ... (Ton CSS que tu as fourni) ... */
-    </style>
-</head>
-<body>
-
-    <script>
-        async function envoyerAuMinitel() {
-            const messageBox = document.querySelector('textarea');
-            const message = messageBox.value;
-            
-            // On cherche le pseudo dans ton interface (exemple: un champ ou une variable globale)
-            // Si tu as un élément spécifique, remplace 'pseudo' par le bon sélecteur
-            const pseudo = document.getElementById('pseudo-input')?.value || "Utilisateur";
-            
-            if (message.trim() !== "") {
-                const texteComplet = pseudo + " : " + message;
+            // Transition finale
+            setTimeout(() => {
+                const bootScreen = document.getElementById('boot-screen');
+                if (bootScreen) bootScreen.style.display = 'none';
                 
-                try {
-                    await fetch('https://ntfy.sh/minitel-tom-2026', {
-                        method: 'POST',
-                        body: texteComplet
-                    });
-                    messageBox.value = ""; // Efface après envoi
-                } catch (error) {
-                    console.error("Erreur de transmission :", error);
+                // Affichage de l'interface principale
+                const mainInterface = document.getElementById('main-interface');
+                if (mainInterface) mainInterface.style.display = 'block';
+                
+                const pseudoSauvegarde = localStorage.getItem('minitel_pseudo');
+                if (pseudoSauvegarde) {
+                    document.getElementById('affichagePseudo').textContent = pseudoSauvegarde;
                 }
-            }
-        }
+            }, 5000); 
+        };
 
-        // On lie la fonction à ton bouton existant
-        const btn = document.getElementById('submitBtn');
-        if (btn) {
-            btn.addEventListener('click', envoyerAuMinitel);
-        }
-  <script>
-    // --- FONCTION D'ENVOI AU MINITEL ---
-    async function envoyerAuMinitel() {
-        const messageBox = document.querySelector('textarea');
-        const pseudoInput = document.querySelector('.pseudo-input-field'); // Ton champ pseudo
-        
-        const message = messageBox ? messageBox.value : "";
-        const pseudo = pseudoInput ? pseudoInput.value : "Tom";
-        
-        // Nettoyage pour le Minitel (enlève accents et caractères spéciaux qui plantent l'affichage)
-        const messagePropre = message.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9 ]/g, " ");
-        
-        if (messagePropre.trim() !== "") {
-            const texteComplet = pseudo + " : " + messagePropre;
+        // --- MODULE D'ENVOI VERS NTFY (Intégré) ---
+        async function gererEnvoiFormulaire(event) {
+            event.preventDefault();
+            const msgInput = document.getElementById('msgTextarea');
+            const msg = msgInput.value;
+            const pseudo = localStorage.getItem('minitel_pseudo') || "Utilisateur";
+            
+            // Nettoyage standard Minitel
+            const cleanMsg = msg.normalize("NFD").replace(/[\u0300-\u036f]/g, "").substring(0, 100);
             
             try {
-                // Envoi direct vers ton canal
-                await fetch('https://ntfy.sh/minitel-tom-2026', {
+                const response = await fetch('https://ntfy.sh/minitel-tom-2026', {
                     method: 'POST',
-                    body: texteComplet
+                    body: `${pseudo} : ${cleanMsg}`
                 });
-                if (messageBox) messageBox.value = ""; // Vide la zone de texte
-            } catch (error) {
-                console.error("Erreur de transmission :", error);
+                if (response.ok) {
+                    msgInput.value = "";
+                    alert("TRANSMISSION RÉUSSIE");
+                }
+            } catch (err) {
+                console.error("ERREUR DE LIAISON ESP32", err);
             }
         }
-    }
-
-    // Branchement automatique sur ton bouton d'envoi existant
-    const btn = document.getElementById('submitBtn');
-    if (btn) {
-        btn.addEventListener('click', envoyerAuMinitel);
-    }
-</script>
+    </script>
 </body>
 </html>
