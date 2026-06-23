@@ -2,94 +2,82 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
-    <title>Minitel X - Boot Sequence</title>
+    <title>Minitel X Terminal Extreme</title>
     <style>
-        /* Effet CRT Global */
         body { background: #000; color: #00ff33; font-family: 'Courier New', monospace; margin: 0; overflow: hidden; }
-        .crt-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 100; }
-        
-        /* Chargement Initial */
-        #boot-container { position: fixed; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99; }
+        .crt-overlay { position: fixed; top:0; left:0; width:100%; height:100%; background: linear-gradient(rgba(18, 16, 16, 0) 50%, rgba(0, 0, 0, 0.25) 50%), linear-gradient(90deg, rgba(255, 0, 0, 0.06), rgba(0, 255, 0, 0.02), rgba(0, 0, 255, 0.06)); background-size: 100% 4px, 3px 100%; pointer-events: none; z-index: 1000; }
+        #boot-container, #main-interface { position: fixed; top:0; left:0; width:100%; height:100%; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 100; background: #000; }
+        .progress-bar { width: 300px; height: 20px; border: 2px solid #00ff33; margin-top: 20px; }
+        #bar-fill { width: 0%; height: 100%; background: #00ff33; }
         .pixel-art-line { border-bottom: 2px dashed #00ff33; width: 60%; margin: 20px 0; position: relative; }
-        .progress-bar { width: 300px; height: 20px; border: 2px solid #00ff33; padding: 2px; }
-        #bar-fill { width: 0%; height: 100%; background: #00ff33; transition: width 0.3s; }
+        #file-packet { position:absolute; top:-10px; left:0; width:10px; height:10px; background:#fff; }
+        #main-interface { display: none; }
+        input, textarea { background: #000; color: #00ff33; border: 1px solid #00ff33; padding: 10px; width: 250px; }
+        button { background: #00ff33; border: none; padding: 10px; margin-top: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
     <div class="crt-overlay"></div>
 
     <div id="boot-container">
-        <div id="art-zone" style="height: 200px; display: flex; align-items: center; gap: 20px;">
-            <div id="pc-icon">PC [ ]</div>
-            <div class="pixel-art-line">
-                <div id="file-packet" style="position:absolute; top:-10px; left:0; width:10px; height:10px; background:#fff;"></div>
-            </div>
-            <div id="esp-icon">ESP32 [ ]</div>
-            <div id="minitel-icon">MINITEL [ ]</div>
-        </div>
-
+        <h1>MINITEL X SYSTEM BOOT</h1>
+        <div class="pixel-art-line"><div id="file-packet"></div></div>
         <div class="progress-bar"><div id="bar-fill"></div></div>
-        <p id="status-text">INITIALISATION...</p>
+        <p id="status-text">INITIALISATION EN COURS...</p>
+    </div>
+
+    <div id="main-interface">
+        <h2>COMMUNICATION ESP32</h2>
+        <input type="text" id="pseudo-input" placeholder="TON PSEUDO (MAX 15)" maxlength="15">
+        <textarea id="msg-input" placeholder="MESSAGE (MAX 25)" maxlength="25"></textarea>
+        <button onclick="envoyerMessage()">ENVOYER LE MESSAGE</button>
     </div>
 
     <script>
-        const status = ["Chargement des donnees ESP32", "Verification tube cathodique", "Exploitation fichier...", "Connexion Minitel etablie"];
+        const status = ["Chargement des données ESP32", "Verification tube cathodique", "Exploitation fichier...", "Connexion Minitel établie"];
         let progress = 0;
-        
-        function boot() {
-            const bar = document.getElementById('bar-fill');
-            const txt = document.getElementById('status-text');
-            const file = document.getElementById('file-packet');
+        const bar = document.getElementById('bar-fill');
+        const file = document.getElementById('file-packet');
+        const txt = document.getElementById('status-text');
+
+        let interval = setInterval(() => {
+            progress += 1;
+            bar.style.width = progress + "%";
+            file.style.left = progress + "%";
+            if (progress % 25 === 0) txt.innerText = status[progress/25 - 1];
             
-            let interval = setInterval(() => {
-                progress += 1;
-                bar.style.width = progress + "%";
-                file.style.left = progress + "%";
-                
-                if (progress % 25 === 0) txt.innerText = status[progress/25 - 1];
-                
-                // Glitch aléatoire
-                if(Math.random() > 0.9) document.body.style.opacity = 0.5;
-                else document.body.style.opacity = 1;
+            // Effet glitch aléatoire
+            if(Math.random() > 0.9) document.body.style.filter = "invert(1)";
+            else document.body.style.filter = "none";
 
-                if (progress >= 100) {
-                    clearInterval(interval);
-                    document.getElementById('boot-container').style.display = 'none';
-                    // Ici on appellera la suite (Pseudo)
-                }
-            }, 100);
+            if (progress >= 100) {
+                clearInterval(interval);
+                document.getElementById('boot-container').style.display = 'none';
+                document.getElementById('main-interface').style.display = 'flex';
+            }
+        }, 100);
+
+        async function envoyerMessage() {
+            const msg = document.getElementById('msg-input').value;
+            const pseudo = document.getElementById('pseudo-input').value || "Tom";
+            const blacklist = ["insulte1", "insulte2"]; // Ajoute tes mots ici
+            
+            if(blacklist.some(v => msg.toLowerCase().includes(v))) {
+                alert("Message interdit !");
+                return;
+            }
+
+            if(msg.length > 0 && msg.length <= 25) {
+                await fetch('https://ntfy.sh/minitel-tom-2026', {
+                    method: 'POST',
+                    body: pseudo + " " + msg
+                });
+                alert("Message envoyé avec succès.");
+                document.getElementById('msg-input').value = "";
+            } else {
+                alert("Erreur : Pseudo ou message invalide.");
+            }
         }
-        boot();
-  <!-- INTERFACE DE COMMUNICATION (À ajouter après le boot-container) -->
-<div id="main-interface" style="display: none; position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 2px solid #00ff33; padding: 20px; background: #040608; width: 300px; text-align: center;">
-    <h2 style="font-size: 16px;">COMMUNICATION VIA ESP32 À MINITEL</h2>
-    <textarea id="msg-input" maxlength="25" placeholder="Message (max 25 car)..." style="width: 100%; height: 50px; background: #000; color: #00ff33; border: 1px solid #00ff33; margin-top: 10px;"></textarea>
-    <button onclick="envoyerMessage()" style="width: 100%; margin-top: 10px; padding: 10px; background: #00ff33; border: none; cursor: pointer;">ENVOYER LE MESSAGE</button>
-</div>
-
-<script>
-    // Ajoute ceci dans ton script existant pour afficher l'interface après le chargement
-    // Modifie la ligne dans ton "boot" où il y avait : document.getElementById('boot-container').style.display = 'none';
-    // Et remplace-la par : 
-    // document.getElementById('boot-container').style.display = 'none';
-    // document.getElementById('main-interface').style.display = 'block';
-
-    async function envoyerMessage() {
-        const msg = document.getElementById('msg-input').value;
-        const pseudo = localStorage.getItem('minitelPseudo') || "Tom";
-        
-        // Ici on fera la blacklist plus tard
-        if(msg.length > 0 && msg.length <= 25) {
-            await fetch('https://ntfy.sh/minitel-tom-2026', {
-                method: 'POST',
-                body: pseudo + " " + msg
-            });
-            alert("Message envoyé !");
-            document.getElementById('msg-input').value = "";
-        } else {
-            alert("Erreur : message trop long ou vide !");
-        }
-    }
-</script>
+    </script>
 </body>
 </html>
